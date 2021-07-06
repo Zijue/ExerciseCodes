@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+// 我们自定义的服务需要支持：改端口号 --port  指定项目启动的根目录 --directory
+// 通过 commander 包实现这一目标
+const { program } = require('commander');
+const config = require('./config');
+const { name, version } = require('../package.json');
+
+program.name(name).version(version).usage('[options]');
+
+const usages = [];
+Object.entries(config).forEach(([key, value]) => {
+    usages.push(value.usage);
+    console.log(key, value);
+    program.option(value.option, value.description, value.default);
+})
+console.log(usages);
+program.on('--help', function () {
+    console.log('\nExamples:')
+    usages.forEach(usage => console.log('  ' + usage))
+});
+
+program.parse(process.argv); // 读取命令行参数并解析

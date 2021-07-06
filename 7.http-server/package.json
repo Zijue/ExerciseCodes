@@ -1,0 +1,16 @@
+{
+  "name": "zijue-http-server",
+  "version": "1.0.0",
+  "description": "手写http-server",
+  "bin": {
+    "zijue-hs": "./bin/www"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "zijue",
+  "license": "ISC",
+  "dependencies": {
+    "commander": "^8.0.0"
+  }
+}
