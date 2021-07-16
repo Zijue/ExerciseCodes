@@ -5,9 +5,10 @@ const url = require('url');
 const mime = require('mime'); // 服务器需要在响应头中指定文件类型和编码，不然浏览器解析出错
 const chalk = require('chalk'); // 终端显示颜色
 const os = require('os');
-const { createReadStream } = require('fs');
+const { createReadStream, readFileSync } = require('fs');
 const { render } = require('./utils');
 const zlib = require('zlib');
+const crypto = require('crypto');
 
 // 获取本机IP地址
 let address = Object.values(os.networkInterfaces()).flat().find(item => item.family == 'IPv4' && item.address != '127.0.0.1').address;
@@ -37,7 +38,7 @@ class Server {
                 res.setHeader('Content-Type', 'text/html;charset=utf-8')
                 res.end(content);
             } else { // 文件
-                this.sendFile(req, res, filepath);
+                this.sendFile(req, res, filepath, statObj);
             }
         } catch (e) {
             this.sendError(res, e)
@@ -52,11 +53,11 @@ class Server {
             for (let i = 0; i < fmts.length; i++) {
                 let lib = fmts[i];
                 if (lib == 'gzip') {
-                    res.setHeader('content-encoding', 'gzip');
+                    res.setHeader('Content-Encoding', 'gzip');
                     zip = zlib.createGzip(); // 此函数返回的就是一个转化流
                     break
                 } else if (lib == 'deflate') {
-                    res.setHeader('content-encoding', 'deflate');
+                    res.setHeader('Content-Encoding', 'deflate');
                     zip = zlib.createDeflate(); // 此函数返回的就是一个转化流
                     break
                 }
@@ -64,7 +65,41 @@ class Server {
         }
         return zip;
     }
-    sendFile(req, res, filepath) {
+    cache(req, res, filepath, statObj) {
+        // 强制缓存
+        // res.setHeader('Cache-Control', 'max-age=10'); // 以秒为单位，表示10s内我引用的其它资源不要再来访问了
+        // res.setHeader('Expires', new Date(Date.now() + 10 * 1000).toUTCString()); // 此设置是为了兼容老版本(http1.0)
+        // 同时设置以上两种缓存，Cache-Control优先级更高
+
+        // 协商缓存
+        // res.setHeader('Cache-Control', 'no-cache'); // 表示每次都来服务器询问（缓存中会存储但每次都发请求）；no-store则没有缓存
+        // let ifModifiedSince = req.headers['if-modified-since']
+        // let ctime = statObj.ctime.toUTCString();
+        // res.setHeader('Last-Modified', ctime);
+        // 根据最后修改时间，可能会出现时间变化后但内容没变，或者如果1s内多次变化，都没有办法监控
+        // if (ifModifiedSince != ctime) { // 根据最后修改时间，单位秒
+        //     return false;
+        // }
+
+        // Etag --> 根据请求的文件内容生成一个唯一的标识
+        res.setHeader('Cache-Control', 'no-cache');
+        let ifNoneMatch = req.headers['if-none-match'];
+        let etag = crypto.createHash('md5').update(readFileSync(filepath)).digest('base64');
+        res.setHeader('Etag', etag);
+
+        // 服务器提供Etag，浏览器请求时就会提供if-none-match
+        if (ifNoneMatch != etag) {
+            return false;
+        }
+
+        return true;
+    }
+    sendFile(req, res, filepath, statObj) {
+        if (this.cache(req, res, filepath, statObj)) {
+            res.statusCode = 304; // 协商缓存需要设置状态码为304
+            return res.end(); // 不用返回内容，告诉浏览器找缓存即可
+        }
+
         res.setHeader('Content-Type', (mime.getType(filepath) || 'text/plain') + ';charset=utf-8');
         /* 如果进行压缩处理：
             浏览器 -> 服务器    accept-encoding: gzip, deflate, br
@@ -78,7 +113,6 @@ class Server {
         }
     }
     sendError(res, e) { // 统一错误处理
-        console.log('err: ', e);
         res.statusCode = 404;
         res.end('Not Found');
     }
