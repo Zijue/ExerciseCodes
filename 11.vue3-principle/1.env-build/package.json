@@ -18,6 +18,7 @@
     "rollup-plugin-typescript2": "^0.30.0"
   },
   "scripts": {
-    "build": "node scripts/build.js"
+    "build": "node scripts/build.js",
+    "dev": "node scripts/dev.js"
   }
 }
