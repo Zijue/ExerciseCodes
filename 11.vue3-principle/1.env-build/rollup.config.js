@@ -33,9 +33,8 @@ const outputConfig = {
 function createConfig(output){
     output.name = pkgOpts.name; // 用于 iife 在 window 上挂载的属性
     output.sourcemap = true; // 生成sourcemap，便于调试。tsconfig.json中也需要开启
-    // console.log(output, 'zijue')
     return {
-        input: resolvePath('src/index.ts'),
+        input: resolvePath('src/index.ts'), // 打包入口
         output,
         plugins: [
             ts({ // ts 编译时配置文件

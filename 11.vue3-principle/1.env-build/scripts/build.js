@@ -19,7 +19,7 @@ async function build(target) {
      * { stdio: 'inherit' } 表示子进程输出打印到父进程标准输出中
      */
     try{
-        await execa('rollup', ['-c', '--environment', `TARGET:${target}`, { stdio: 'inherit' }]);
+        await execa('rollup', ['-c', '--environment', `TARGET:${target}`], { stdio: 'inherit' });
     }catch(e){
         throw e
     }
