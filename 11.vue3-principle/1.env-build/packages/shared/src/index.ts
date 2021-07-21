@@ -1,1 +1,3 @@
-export default 1;
+export function isObject(val) {
+    return typeof val == 'object' && val !== null;
+}
