@@ -38,6 +38,5 @@ function createReactiveObject(target, isReadonly, baseHandler) {
     // 如果是对象，就做代理 new Proxy
     let proxy = new Proxy(target, baseHandler);
     proxyMap.set(target, proxy);
-    console.log('proxy')
     return proxy;
 }

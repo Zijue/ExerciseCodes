@@ -14,9 +14,11 @@
         let { reactive, shallowReactive, readonly, shallowReadonly, effect } = VueReactivity;
         let zijue = { name: 'zijue', age: 18, address: { city: 'wh' } };
         let proxy = reactive(zijue);
-         proxy = reactive(zijue);
-        console.log(proxy);
-
+        let proxy2 = readonly(zijue);
+        console.log(proxy.name);
+        console.log(proxy.address.city);
+        console.log(proxy2.name);
+        console.log(proxy2.address.city);
     </script>
 </body>
 
