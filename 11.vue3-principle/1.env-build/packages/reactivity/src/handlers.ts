@@ -1,4 +1,4 @@
-import { extend, isObject } from "@vue/shared";
+import { extend, hasChanged, hasOwnProp, isArray, isIntegerKey, isObject } from "@vue/shared";
 import { reactive, readonly } from "./reactive";
 
 function createGetter(isReadonly = false, isShallow = false) {
@@ -23,9 +23,27 @@ function createGetter(isReadonly = false, isShallow = false) {
     }
 }
 function createSetter(isShallow = false) {
+    /** 针对数组而言，如果调用push方法，就会产生两次触发
+     * 1.第一次给数组新增了一项，同时也修改了长度
+     * 2.因为修改了长度，所以第二次触发set（此次触发是无意义的）
+     */
     return function set(target, key, value, receiver) {
-        const res = Reflect.set(target, key, value, receiver);
-        console.log(res)
+        // 设置属性：新增、修改
+        const oldValue = Reflect.get(target, key, receiver); // 获取老值
+        /** 如何判断数组是新增还是修改
+         * key是数字 && key < target.length => 新增
+         * 否则就是修改
+         */
+        let hasKey = isArray(target) && isIntegerKey(key) ? Number(key) < target.length : hasOwnProp(target, key);
+        const res = Reflect.set(target, key, value, receiver); // 必须先判断是否有key，再更改值
+        if (!hasKey) {
+            console.log('新增');
+        } else if (hasChanged(oldValue, value)) {
+            console.log('修改');
+        } else {
+            console.log('无变化'); // 数组第二次触发会在此处，无意义，所以此处不添加逻辑
+        }
+
         return res;
     }
 }
@@ -58,7 +76,6 @@ const readonlySet = {
  * console.log(target); // expected output: Object { a: 1, b: 4, c: 5 }
  * console.log(returnedTarget); // expected output: Object { a: 1, b: 4, c: 5 }
  */
-// const extend = Object.assign; // 可以作为公用方法放入shared模块中
 export const readonlyHandlers = extend({
     get: readonlyGet
 }, readonlySet);
