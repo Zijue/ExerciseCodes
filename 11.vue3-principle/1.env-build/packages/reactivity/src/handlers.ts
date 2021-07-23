@@ -1,4 +1,5 @@
 import { extend, hasChanged, hasOwnProp, isArray, isIntegerKey, isObject } from "@vue/shared";
+import { track, trigger } from "./effect";
 import { reactive, readonly } from "./reactive";
 
 function createGetter(isReadonly = false, isShallow = false) {
@@ -11,7 +12,7 @@ function createGetter(isReadonly = false, isShallow = false) {
         // 一般使用Proxy会配合Reflect使用
         const res = Reflect.get(target, key, receiver);
         if (!isReadonly) { // 不是只读属性，收集此属性用于之后值变化时更新视图
-            console.log('收集当前属性，之后属性值改变，更新视图', key);
+            track(target, 'get', key);
         }
         if (isShallow) { // 浅代理，只代理第一层属性，更深层次不做处理
             return res;
@@ -37,11 +38,11 @@ function createSetter(isShallow = false) {
         let hasKey = isArray(target) && isIntegerKey(key) ? Number(key) < target.length : hasOwnProp(target, key);
         const res = Reflect.set(target, key, value, receiver); // 必须先判断是否有key，再更改值
         if (!hasKey) {
-            console.log('新增');
+            trigger(target, 'add', key, value, oldValue); // 新增触发
         } else if (hasChanged(oldValue, value)) {
-            console.log('修改');
+            trigger(target, 'set', key, value, oldValue); // 修改触发
         } else {
-            console.log('无变化'); // 数组第二次触发会在此处，无意义，所以此处不添加逻辑
+            // console.log('无变化'); // 数组第二次触发会在此处，无意义，所以此处不添加逻辑
         }
 
         return res;
