@@ -26,14 +26,23 @@
         //     console.log(proxy.address);
         // }); // 2.下次更新属性的时候，会再次执行这个effect
 
-        effect(() => {
-            console.log(proxy.name);
-            console.log(proxy.age);
+        // effect(() => {
+        //     console.log(proxy.name);
+        //     console.log(proxy.age);
+        // });
+        // setTimeout(() => {
+        //     proxy.name = 'xiaochi';
+        //     proxy.age = '20';
+        // }, 1000);
+
+        effect(()=>{
+            // console.log(proxy.arr); // 这样只是对arr属性进行了收集，arr是一个数组（引用类型），修改arr的值就不会触发此effect重新执行
+            // console.log(JSON.stringify(proxy.arr)); // 当调用JSON.stringify的时候，会访问数组中每一个属性，包括length
+            console.log(proxy.arr[3]);
         });
-        setTimeout(() => {
-            proxy.name = 'xiaochi';
-            proxy.age = '20';
-        }, 1000);
+        // proxy.arr[2] = 100;
+        // proxy.arr.length = 1; // 未收集length属性，修改length一样需要触发
+        proxy.arr.push(100);
 
     </script>
 </body>

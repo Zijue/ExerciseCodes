@@ -1,3 +1,5 @@
+import { isArray, isIntegerKey } from "@vue/shared";
+
 export function effect(fn, options: any = {}) {
     const effect = createReactiveEffect(fn, options);
     if (!options.lazy) {
@@ -22,6 +24,9 @@ function createReactiveEffect(fn, options) {
         }
     }
     effect.id = id++;
+    effect.__isEffect = true;
+    effect.options = options;
+    effect.deps = []; // effect用来收集依赖了哪些属性
     return effect;
 }
 // 一个属性对应多个effect，一个effect对应多个属性 ==> 多对多的关系
@@ -59,6 +64,21 @@ export function trigger(target, action, key, newValue, oldValue?) {
             effects.forEach(effect => effectSet.add(effect));
         }
     }
-    add(depsMap.get(key)); // 将属性收集effects添加到统一的集合中
+    if (key === 'length' && isArray(target)) { // 当修改的是数组的length属性时，需要视情况触发更新
+        depsMap.forEach((deps, key) => {
+            if (key > newValue || key === 'length') { // 此处的key是收集依赖的属性
+                add(deps); // 当收集的依赖的属性 < 更改的数组长度时，需要手动触发
+            }
+        });
+    } else {
+        add(depsMap.get(key)); // 将属性收集effects添加到统一的集合中
+        // 当数组push值时，走trigger(target, 'add', key, value)新增触发逻辑，key为Int且数组未收集；所以此处也需要手动更新
+        switch (action) {
+            case 'add':
+                if (isArray(target) && isIntegerKey(key)) {
+                    add(depsMap.get('length')); // 增加属性，需要触发length的依赖收集
+                }
+        }
+    }
     effectSet.forEach((effect: any) => effect()); // 遍历所有收集的effect并执行
 }
