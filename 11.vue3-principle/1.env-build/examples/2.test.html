@@ -17,13 +17,23 @@
         // let proxy2 = readonly(zijue);
         // proxy.arr.push(100);
         // proxy.arr[1] = 10;
-        effect(() => { // 1.默认effect中函数会执行一次，执行的时候应该把用到的属性和这个effect关联起来
+
+        // effect(() => { // 1.默认effect中函数会执行一次，执行的时候应该把用到的属性和这个effect关联起来
+        //     console.log(proxy.name);
+        //     effect(() => {
+        //         console.log(proxy.age);
+        //     });
+        //     console.log(proxy.address);
+        // }); // 2.下次更新属性的时候，会再次执行这个effect
+
+        effect(() => {
             console.log(proxy.name);
-            effect(() => {
-                console.log(proxy.age);
-            });
-            console.log(proxy.address);
-        }); // 2.下次更新属性的时候，会再次执行这个effect
+            console.log(proxy.age);
+        });
+        setTimeout(() => {
+            proxy.name = 'xiaochi';
+            proxy.age = '20';
+        }, 1000);
 
     </script>
 </body>

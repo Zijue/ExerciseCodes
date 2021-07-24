@@ -12,7 +12,7 @@ function createGetter(isReadonly = false, isShallow = false) {
         // 一般使用Proxy会配合Reflect使用
         const res = Reflect.get(target, key, receiver);
         if (!isReadonly) { // 不是只读属性，收集此属性用于之后值变化时更新视图
-            track(target, 'get', key);
+            track(target, 'get', key); // 依赖收集
         }
         if (isShallow) { // 浅代理，只代理第一层属性，更深层次不做处理
             return res;

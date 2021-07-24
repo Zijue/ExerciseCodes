@@ -50,5 +50,15 @@ export function track(target, action, key) {
     }
 }
 export function trigger(target, action, key, newValue, oldValue?) {
-
+    // 去映射表中找到属性对应的effect，让其重新执行
+    const depsMap = targetMap.get(target);
+    if (!depsMap) return; // 只是改了属性，这个属性没有在effect中使用
+    const effectSet = new Set();
+    const add = (effects) => { // 如果同时有多个属性依赖的effect是同一个，new Set()会去重
+        if (effects) {
+            effects.forEach(effect => effectSet.add(effect));
+        }
+    }
+    add(depsMap.get(key)); // 将属性收集effects添加到统一的集合中
+    effectSet.forEach((effect: any) => effect()); // 遍历所有收集的effect并执行
 }
