@@ -24,7 +24,7 @@ function createReactiveEffect(fn, options) {
         }
     }
     effect.id = id++;
-    effect.__isEffect = true;
+    effect.__v_isEffect = true;
     effect.options = options;
     effect.deps = []; // effect用来收集依赖了哪些属性
     return effect;

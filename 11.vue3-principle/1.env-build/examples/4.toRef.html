@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+    <script>
+        let { reactive, shallowReactive, readonly, shallowReadonly, effect, ref, shallowRef, toRef, toRefs } = VueReactivity;
+        let proxy = reactive({ name: 'zijue', age: 18 });
+        // 如果我们希望将reactive中的某个值单独拿出来用，并且希望它是一个响应式的，这个时候就可以使用toRef api
+        let nameRef = toRef(proxy, 'name');
+        effect(() => {
+            console.log(nameRef.value); // zijue ==> 1s 后 ==> xiaochi
+        });
+        setTimeout(() => {
+            nameRef.value = 'xiaochi';
+        }, 1000)
+
+        // 为了更加方便的使用reactive中的属性，toRefs可以批量转化
+        let { name, age } = toRefs(proxy);
+        console.log(name, age); // name，age均转化为了ref ObjectRefImpl {target: Proxy, key: "name", __v_isRef: true} {target: Proxy, key: "age", __v_isRef: true}
+        // ObjectRefImpl {target: Proxy, key: "name", __v_isRef: true} {target: Proxy, key: "age", __v_isRef: true}
+    </script>
+</body>
+
+</html>
