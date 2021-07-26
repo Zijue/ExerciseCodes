@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+    <script>
+        let { reactive, effect, computed } = VueReactivity;
+        let proxy = reactive({ name: 'zijue', age: 18 });
+        // 把年龄 + 1
+        let newAge = computed(() => { // 计算属性也是一个effect，age会收集计算属性的effect
+            console.log('runner');
+            return proxy.age + 1;
+        })
+        console.log(newAge.value); // 不取值computed不会执行
+        proxy.age = 20; // 更改age的值后，还需要计算属性重新取值才会去执行计算属性
+
+        effect(() => {
+            console.log(newAge.value); // 计算属性也具有收集功能，可以收集effect
+        });
+        proxy.age = 30; // 更新age => 触发计算属性收集的effect => 计算属性取值 => 触发age收集的effect
+
+        // 上述代码中：age会收集computed，computed会收集它所在的effect
+        // 当更新age时，会触发age收集的computed effect，还会触发计算属性收集的effect
+    </script>
+</body>
+
+</html>

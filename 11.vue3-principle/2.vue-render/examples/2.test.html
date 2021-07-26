@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+    <script>
+        let { reactive, shallowReactive, readonly, shallowReadonly, effect } = VueReactivity;
+        let zijue = { name: 'zijue', age: 18, address: { city: 'wh' }, arr: [1, 2, 3] };
+        let proxy = reactive(zijue);
+        // let proxy2 = readonly(zijue);
+        // proxy.arr.push(100);
+        // proxy.arr[1] = 10;
+
+        // effect(() => { // 1.默认effect中函数会执行一次，执行的时候应该把用到的属性和这个effect关联起来
+        //     console.log(proxy.name);
+        //     effect(() => {
+        //         console.log(proxy.age);
+        //     });
+        //     console.log(proxy.address);
+        // }); // 2.下次更新属性的时候，会再次执行这个effect
+
+        // effect(() => {
+        //     console.log(proxy.name);
+        //     console.log(proxy.age);
+        // });
+        // setTimeout(() => {
+        //     proxy.name = 'xiaochi';
+        //     proxy.age = '20';
+        // }, 1000);
+
+        effect(()=>{
+            // console.log(proxy.arr); // 这样只是对arr属性进行了收集，arr是一个数组（引用类型），修改arr的值就不会触发此effect重新执行
+            // console.log(JSON.stringify(proxy.arr)); // 当调用JSON.stringify的时候，会访问数组中每一个属性，包括length
+            console.log(proxy.arr[3]);
+        });
+        // proxy.arr[2] = 100;
+        // proxy.arr.length = 1; // 未收集length属性，修改length一样需要触发
+        proxy.arr.push(100);
+
+    </script>
+</body>
+
+</html>
