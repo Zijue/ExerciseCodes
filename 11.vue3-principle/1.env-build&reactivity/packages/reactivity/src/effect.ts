@@ -54,7 +54,7 @@ export function track(target, action, key) {
         dep.add(activeEffect);
     }
 }
-export function trigger(target, action, key, newValue, oldValue?) {
+export function trigger(target, action, key, newValue?, oldValue?) {
     // 去映射表中找到属性对应的effect，让其重新执行
     const depsMap = targetMap.get(target);
     if (!depsMap) return; // 只是改了属性，这个属性没有在effect中使用
@@ -80,5 +80,13 @@ export function trigger(target, action, key, newValue, oldValue?) {
                 }
         }
     }
-    effectSet.forEach((effect: any) => effect()); // 遍历所有收集的effect并执行
+    effectSet.forEach((effect: any) => {
+        // 数据变化时，原则上应该触发对应的effect让他重新执行，如果effect提供了scheduler，
+        // 那么就让scheduler执行，而不是effect重新执行
+        if (effect.options.scheduler) {
+            effect.options.scheduler(effect);
+        } else {
+            effect();
+        }
+    }); // 遍历所有收集的effect并执行
 }

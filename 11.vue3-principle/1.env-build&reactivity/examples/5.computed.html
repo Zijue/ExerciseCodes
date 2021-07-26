@@ -21,7 +21,7 @@
         console.log(newAge.value); // 不取值computed不会执行
         proxy.age = 20; // 更改age的值后，还需要计算属性重新取值才会去执行计算属性
 
-        effect(()=>{
+        effect(() => {
             console.log(newAge.value); // 计算属性也具有收集功能，可以收集effect
         });
         proxy.age = 30; // 更新age => 触发计算属性收集的effect => 计算属性取值 => 触发age收集的effect
