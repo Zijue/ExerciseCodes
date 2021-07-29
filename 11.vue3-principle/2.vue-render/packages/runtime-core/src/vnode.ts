@@ -1,4 +1,4 @@
-import { isArray, isObject, isString, ShapeFlags } from "@vue/shared";
+import { isArray, isObject, isString, isVnode, ShapeFlags } from "@vue/shared";
 
 export function createVnode(type, props, children = null) {
     /** 虚拟节点？ 描述真实节点的对象。

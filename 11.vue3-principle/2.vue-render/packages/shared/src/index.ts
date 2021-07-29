@@ -1,7 +1,8 @@
 export function isObject(val) {
     return typeof val == 'object' && val !== null;
 }
-
+export const isFunction = (val) => typeof val == 'function';
+export const isVnode = (val) => val.__v_isVnode == true;
 export const extend = Object.assign;
 
 export const isArray = Array.isArray;

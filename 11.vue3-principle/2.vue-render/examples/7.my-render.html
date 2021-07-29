@@ -12,13 +12,22 @@
     <div id="app"></div>
     <script src="../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
     <script>
-        const { createApp } = VueRuntimeDOM;
+        const { createApp, h } = VueRuntimeDOM;
         const App = {
             setup() {
-                let { count, add } = useCounter();
-                return () => {
-                    return h('h1', { onClick: add }, count.value);
-                }
+                // console.log(...arguments)
+                return { a: 1 }
+            },
+            render(proxy) {
+                // console.log(proxy.a);
+                // h方法第一个参数一定是类型，第二个参数可能是属性可能是儿子，后面的一定都是儿子，没有属性的情况，只能放数组
+                // 还有一种情况是可以写文本，一个type + 一个文本
+                // return h('h1', 'hello'); // √
+                // return h('h1', 'hello', 'hello'); // ×
+                // return h('h1', ['hello', 'hello']); // √
+                // return h('h1', {}, 'hello', 'hello'); // √
+                // return h('div', {}, h('p', { style: { color: 'red' } }, h('span', 'hi, zijue')));
+                return h('div', {}, h('p', { style: { color: 'red' } }, h('span', 'hi, zijue')));
             }
         }
         createApp(App, { name: 'zijue', age: 18 }).mount('#app');
