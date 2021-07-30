@@ -19,6 +19,11 @@
                 return { a: 1 }
             },
             render(proxy) {
+                console.log(proxy.name, proxy.age, proxy.a);
+                // 此处通过代理可以拿到setup返回的结果及根组件提供的属性
+                // 同时this就是proxy
+                console.log(this.name, this.age, this.a);
+
                 // console.log(proxy.a);
                 // h方法第一个参数一定是类型，第二个参数可能是属性可能是儿子，后面的一定都是儿子，没有属性的情况，只能放数组
                 // 还有一种情况是可以写文本，一个type + 一个文本
