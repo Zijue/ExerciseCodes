@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
+    <script>
+        const { createApp, h, reactive, toRefs } = VueRuntimeDOM;
+        // 代码在浏览器中跑，没有把模板编译成render函数的能力
+        const App = {
+            setup() {
+                const state = reactive({ name: 'zijue', age: 18 });
+                const ageAdd = () => {
+                    state.age++;
+                }
+                return { ...toRefs(state), ageAdd }
+            },
+            render({ name, age, ageAdd }) {
+                return h('div', {}, h('p', { style: { color: 'red' }, onClick: ageAdd }, `${name.value} - ${age.value}`));
+            }
+        }
+        createApp(App, { name: 'zijue', age: 18 }).mount('#app');
+    </script>
+</body>
+
+</html>
