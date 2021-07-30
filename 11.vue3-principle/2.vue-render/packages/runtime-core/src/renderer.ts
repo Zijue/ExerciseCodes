@@ -24,7 +24,7 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
                 patch(null, subTree, container);
                 instance.isMounted = true; // 挂载完成
             } else {
-                // console.log('修改了数据');
+                console.log('修改了数据');
             }
         })
     };
