@@ -12,18 +12,33 @@
     <div id="app"></div>
     <script src="../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
     <script>
-        const { createApp, h, reactive, toRefs } = VueRuntimeDOM;
+        const { createApp, h, reactive, toRefs, ref } = VueRuntimeDOM;
         // 代码在浏览器中跑，没有把模板编译成render函数的能力
         const App = {
-            setup() {
+            setup() { // setup中返回的是对象，那么这个对象会被用于渲染使用；如果返回的是函数，会作为render方法
                 const state = reactive({ name: 'zijue', age: 18 });
-                const ageAdd = () => {
-                    state.age++;
-                }
-                return { ...toRefs(state), ageAdd }
+                const flag = ref(true);
+                setTimeout(() => {
+                    flag.value = false;
+                }, 1000);
+                return { ...toRefs(state), flag }
             },
-            render({ name, age, ageAdd }) {
-                return h('div', {}, h('p', { style: { color: 'red' }, onClick: ageAdd }, `${name.value} - ${age.value}`));
+            // 1.前后元素不一致
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', { style: { color: 'red' } }, `hi, ${name.value}`);
+            //     } else {
+            //         return h('p', { style: { color: 'blue' } }, `hello, ${name.value}`);
+            //     }
+            // }
+
+            // 2.前后元素一致
+            render({ name, age, flag }) {
+                if (flag.value) {
+                    return h('div', { style: { color: 'red' } }, `hi, ${name.value}`);
+                } else {
+                    return h('div', { style: { color: 'blue' } }, `hello, ${name.value}`);
+                }
             }
         }
         createApp(App, { name: 'zijue', age: 18 }).mount('#app');
