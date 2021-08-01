@@ -51,7 +51,7 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
     const updateComponent = (n1, n2, container) => {
 
     };
-    const mountElement = (n2, container) => { // 把虚拟节点变成真实的DOM元素
+    const mountElement = (n2, container, anchor) => { // 把虚拟节点变成真实的DOM元素
         const { type, props, children, shapeFlag } = n2;
         let el = n2.el = hostCreateElement(type); // 创建对应真实的DOM元素
         if (props) {
@@ -66,7 +66,7 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
             hostSetElementText(el, children);
         };
         // 最后将父节点挂载到container上
-        hostInsert(el, container);
+        hostInsert(el, container, anchor);
     };
     const patchProps = (el, oldProps, newProps) => {
         // 两个循环，第一次循环遍历新属性更新到旧节点上，第二次循环遍历旧属性清空新属性中没有的项
@@ -85,8 +85,57 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
             }
         }
     };
+    const unmountChildren = (children) => {
+        for (let i = 0; i < children.length; i++) {
+            unmount(children[i]);
+        }
+    };
     const patchKeyedChildren = (c1, c2, container) => {
         // diff 算法
+        let i = 0; // 新旧子节点默认都是从头开始比对
+        let e1 = c1.length - 1; // 旧子节点最后一个元素的下标
+        let e2 = c2.length - 1; // 新子节点最后一个元素的下标
+        // sync from start  从头开始一个个比，遇到不同的就停止
+        while (i <= e1 && i <= e2) {
+            const n1 = c1[i];
+            const n2 = c2[i];
+            if (isSameVnode(n1, n2)) { // 是同一个元素，继续对比这两个子节点的属性和子节点
+                patch(n1, n2, container);
+            } else { // 不同直接跳出循环，然后从尾部对比
+                break;
+            }
+            i++;
+        }
+        // sync from end    从尾开始一个个比，一样是遇到不同的就停止
+        while (i <= e1 && i <= e2) {
+            const n1 = c1[e1];
+            const n2 = c2[e2];
+            if (isSameVnode(n1, n2)) {
+                patch(n1, n2, container);
+            } else {
+                break;
+            }
+            e1--;
+            e2--;
+        }
+        // 有一方已经完全对比完成了，diff算法的特殊情况对比
+        if (i > e1) { // common sequence + mount    老的少，新的多
+            if (i <= e2) {
+                // 如何判断是添加到尾部还是插入到前面？
+                // 判断 e2 + 1 与 c2.length 的大小；如果向后追加 e2 + 1 > c2.length 肯定成立
+                const nextPos = e2 + 1;
+                const anchor = nextPos < c2.length ? c2[nextPos].el : null; // 获取插入位置节点
+                while (i <= e2) {
+                    patch(null, c2[i++], container, anchor);
+                }
+            }
+        } else if (i > e2) { // common sequence + unmount   老的多，新的少
+            while (i <= e1) {
+                unmount(c1[i++]);
+            }
+        } else { // 乱序比对（最长递增子序列）
+
+        }
     };
     const patchChildren = (n1, n2, container) => {
         const c1 = n1.children;
@@ -95,7 +144,12 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
         const shapeFlag = n2.shapeFlag;
         // 1.新子节点是文本，直接新的替换旧的
         if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
-            hostSetElementText(container, c2); // 直接替换
+            if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) { // 旧子节点是数组，先删除
+                unmountChildren(c1);
+            }
+            if (c1 !== c2) {
+                hostSetElementText(container, c2); // 直接替换
+            }
         } else { // 新子节点是数组
             if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) { // 3.新旧子节点都是数组
                 patchKeyedChildren(c1, c2, container);
@@ -113,9 +167,9 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
         patchProps(el, oldProps, newProps); // 更新属性
         patchChildren(n1, n2, el); // 更新子节点；diff算法
     };
-    const processElement = (n1, n2, container) => {
+    const processElement = (n1, n2, container, anchor) => {
         if (n1 == null) {
-            mountElement(n2, container);
+            mountElement(n2, container, anchor);
         } else { // patch方法中对不同节点进行了处理，能走到这里说明n1、n2是相同节点，只是属性或子节点不同
             patchElement(n1, n2, container); // diff算法
         }
@@ -133,7 +187,7 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
     const unmount = (vnode) => {
         hostRemove(vnode.el);
     };
-    const patch = (n1, n2, container) => {
+    const patch = (n1, n2, container, anchor = null) => {
         // 判断n1、n2是否为同一个元素；通过type和key判断
         if (n1 && !isSameVnode(n1, n2)) { // 如果type和key不一样则直接删除老节点后渲染新节点
             unmount(n1);
@@ -142,7 +196,7 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
 
         const { shapeFlag } = n2; // n2 可能是元素或者组件，不同的类型走不同的处理逻辑
         if (shapeFlag & ShapeFlags.ELEMENT) {
-            processElement(n1, n2, container); // 处理元素类型
+            processElement(n1, n2, container, anchor); // 处理元素类型
         } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
             processComponent(n1, n2, container); // 处理组件类型
         }

@@ -33,11 +33,71 @@
             // }
 
             // 2.前后元素一致
+            // 2.1.新旧子节点都是文本
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', { style: { color: 'red' } }, `hi, ${name.value}`);
+            //     } else {
+            //         return h('div', { style: { color: 'blue' } }, `hello, ${name.value}`);
+            //     }
+            // }
+            // 2.2.新子节点是文本，旧子节点是数组
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', { style: { color: 'red' } }, [
+            //             h('li', 'A'),
+            //             h('li', 'B'),
+            //         ]);
+            //     } else {
+            //         return h('div', { style: { color: 'blue' } }, `hello, ${name.value}`);
+            //     }
+            // }
+            // 2.3.新旧子节点都是数组，尾部增加
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     } else {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //             h('li', { key: 'C' }, 'C'),
+            //             h('li', { key: 'D' }, 'D'),
+            //         ]);
+            //     }
+            // }
+            // 2.4.新旧子节点都是数组，头部增加
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     } else {
+            //         return h('div', [
+            //             h('li', { key: 'C' }, 'C'),
+            //             h('li', { key: 'D' }, 'D'),
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     }
+            // }
+            // 2.5.新旧子节点都是数组，老的节点比新的多（新节点遍历完的情况）
             render({ name, age, flag }) {
                 if (flag.value) {
-                    return h('div', { style: { color: 'red' } }, `hi, ${name.value}`);
+                    return h('div', [
+                        h('li', { key: 'A' }, 'A'),
+                        h('li', { key: 'B' }, 'B'),
+                        h('li', { key: 'C' }, 'C'),
+                        h('li', { key: 'D' }, 'D'),
+                    ]);
                 } else {
-                    return h('div', { style: { color: 'blue' } }, `hello, ${name.value}`);
+                    return h('div', [
+                        h('li', { key: 'A' }, 'A'),
+                        h('li', { key: 'B' }, 'B'),
+                    ]);
                 }
             }
         }
