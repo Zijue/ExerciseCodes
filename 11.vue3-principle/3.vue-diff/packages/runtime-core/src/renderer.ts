@@ -133,9 +133,104 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
             while (i <= e1) {
                 unmount(c1[i++]);
             }
-        } else { // 乱序比对（最长递增子序列）
-
+        } else { // 乱序比对（最长递增子序列）  diff核心算法
+            // A B [C D E Q] F G
+            // A B [E C D H] F G
+            // i = 2, e1 = 5, e2 = 5
+            const s1 = i;
+            const s2 = i;
+            // 1.根据新节点生成一个索引的映射表
+            const keyToNewIndexMap = new Map();
+            for (let i = s2; i <= e2; i++) {
+                const nextChild = c2[i];
+                keyToNewIndexMap.set(nextChild.key, i);
+            }
+            // console.log(keyToNewIndexMap); // {"E" => 2, "C" => 3, "D" => 4, "H" => 5}
+            // 2.有了映射表之后，需要知道哪些可以被patch，哪些不能，哪些需要删除
+            // 2.1.计算有几个新节点需要被patch
+            const toBePatched = e2 - s2 + 1; // 4
+            // 2.2.创建一个与需要patch等长的数组，用0填充
+            const newIndexToOldIndexMap = new Array(toBePatched).fill(0); // [0, 0, 0, 0]
+            // 2.3.遍历老节点，删除新节点中没有的，更新能复用元素并标记已patch
+            for (let i = s1; i <= e1; i++) {
+                const prevChild = c1[i];
+                const newIndex = keyToNewIndexMap.get(prevChild.key); // 获取老节点在新节点中的下标索引
+                if (newIndex == undefined) { // 老节点中有，新节点中没有的，直接删除
+                    unmount(prevChild);
+                } else {
+                    // 将patch过的新节点对应下标与该节点在老节点中的位置一一映射（），构建新老索引的关系；
+                    // 映射完成后，值为0表示该新节点未patch即老节点中没有
+                    newIndexToOldIndexMap[newIndex - s2] = i + 1; // [5, 3, 4, 0]
+                    patch(prevChild, c2[newIndex], container); // 更新相同元素的属性与子节点
+                }
+            }
+            // 2.4.求解最长递增子序列
+            // 这里是求解[5, 3, 4, 0]的最长递增子序列，即求解不需要移动的元素有哪些
+            let increasingNewIndexSeq = getSeq(newIndexToOldIndexMap); // [1, 2]
+            let j = increasingNewIndexSeq.length - 1; // 取出最后一个的索引
+            for (let i = toBePatched - 1; i >= 0; i--) {
+                let currentIndex = i + s2; // 获取h节点的位置
+                let childNode = c2[currentIndex];
+                let anchor = currentIndex + 1 < c2.length ? c2[currentIndex + 1].el : null;
+                // 如果以前不存在这个节点就创造出来，再进行插入操作
+                if (newIndexToOldIndexMap[i] == 0) {
+                    patch(null, childNode, container, anchor);
+                } else {
+                    if (increasingNewIndexSeq[j] !== i) {
+                        hostInsert(childNode.el, container, anchor); // 存在直接将节点进行插入操作
+                        // dom操作是具有移动性的，用的是以前的元素，但是都做了一遍重新插入
+                    } else {
+                        j--;
+                    }
+                }
+            }
         }
+    };
+    const getSeq = (arr) => {
+        const len = arr.length;
+        const result = [0]; // 用来存放最长递增子序列的索引
+        const p = arr.slice(0); // 用来存索引，用于记录自己前一个节点的下标
+        let resultLastIndex;
+
+        for (let i = 0; i < len; i++) {
+            const arrI = arr[i]; // 获取数组中的每一项，但是其中值为0是无意义，需要忽略
+            if (arrI !== 0) {
+                resultLastIndex = result[result.length - 1];
+                // 索引数组中最后一个对应的数组的值与当前数组拿出来的值进行对比，
+                // arr[resultLastIndex] < arrI，将当前的索引添加到索引数组result中
+                if (arr[resultLastIndex] < arrI) {
+                    p[i] = resultLastIndex; // 在放入之前记住前一个的索引
+                    result.push(i);
+                    continue; // 如果是比最后一项大，后续逻辑就不用走了
+                }
+                // 二分查找，找到已存入索引数组中对应的值第一个大于当前数组下标对应的值的下标
+                let start = 0;
+                let end = result.length - 1;
+                let middle;
+                while (start < end) { // 最终start == end
+                    middle = ((start + end) / 2) | 0; // 向下取整
+                    if (arr[result[middle]] < arrI) {
+                        start = middle + 1;
+                    } else {
+                        end = middle;
+                    }
+                }
+                if (arrI < arr[result[start]]) {
+                    if (start > 0) {
+                        p[i] = result[start - 1]; // 替换的时候记录我替换那个的前一个的索引
+                    }
+                    result[start] = i; // 直接用当前的索引替换到老的索引
+                }
+            }
+            // 从结果的最后一项开始，倒序查找回来
+            let len = result.length;
+            let last = result[len - 1];
+            while (len-- > 0) {
+                result[len] = last;
+                last = p[last]; // 通过最后一项倒序查找
+            }
+        }
+        return result;
     };
     const patchChildren = (n1, n2, container) => {
         const c1 = n1.children;

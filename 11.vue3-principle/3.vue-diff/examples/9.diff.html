@@ -85,18 +85,44 @@
             //     }
             // }
             // 2.5.新旧子节点都是数组，老的节点比新的多（新节点遍历完的情况）
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //             h('li', { key: 'C' }, 'C'),
+            //             h('li', { key: 'D' }, 'D'),
+            //         ]);
+            //     } else {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     }
+            // }
+            // 2.6.新旧子节点都是数组，乱序，核心diff算法
             render({ name, age, flag }) {
                 if (flag.value) {
                     return h('div', [
                         h('li', { key: 'A' }, 'A'),
                         h('li', { key: 'B' }, 'B'),
-                        h('li', { key: 'C' }, 'C'),
+                        h('li', { key: 'C', style: { color: 'red' } }, 'C'),
                         h('li', { key: 'D' }, 'D'),
+                        h('li', { key: 'E' }, 'E'),
+                        h('li', { key: 'Q' }, 'Q'),
+                        h('li', { key: 'F' }, 'F'),
+                        h('li', { key: 'G' }, 'G'),
                     ]);
                 } else {
                     return h('div', [
                         h('li', { key: 'A' }, 'A'),
                         h('li', { key: 'B' }, 'B'),
+                        h('li', { key: 'E' }, 'E'),
+                        h('li', { key: 'C', style: { color: 'blue' } }, 'C'),
+                        h('li', { key: 'D' }, 'D'),
+                        h('li', { key: 'H' }, 'H'),
+                        h('li', { key: 'F' }, 'F'),
+                        h('li', { key: 'G' }, 'G'),
                     ]);
                 }
             }
