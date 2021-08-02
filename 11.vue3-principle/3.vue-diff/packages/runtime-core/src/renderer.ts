@@ -119,8 +119,8 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
             e2--;
         }
         // 有一方已经完全对比完成了，diff算法的特殊情况对比
-        if (i > e1) { // common sequence + mount    老的少，新的多
-            if (i <= e2) {
+        if (i > e1) { // common sequence + mount    老的少，新的多，说明是新增
+            if (i <= e2) { // 表示有新增的部分
                 // 如何判断是添加到尾部还是插入到前面？
                 // 判断 e2 + 1 与 c2.length 的大小；如果向后追加 e2 + 1 > c2.length 肯定成立
                 const nextPos = e2 + 1;
@@ -130,7 +130,7 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
                 }
             }
         } else if (i > e2) { // common sequence + unmount   老的多，新的少
-            while (i <= e1) {
+            while (i <= e1) { // 表示有需要删除的部分
                 unmount(c1[i++]);
             }
         } else { // 乱序比对（最长递增子序列）  diff核心算法
@@ -158,7 +158,7 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
                 if (newIndex == undefined) { // 老节点中有，新节点中没有的，直接删除
                     unmount(prevChild);
                 } else {
-                    // 将patch过的新节点对应下标与该节点在老节点中的位置一一映射（），构建新老索引的关系；
+                    // 将patch过的新节点对应下标与该节点在老节点中的位置一一映射（构建新老索引的关系）；
                     // 映射完成后，值为0表示该新节点未patch即老节点中没有
                     newIndexToOldIndexMap[newIndex - s2] = i + 1; // [5, 3, 4, 0]
                     patch(prevChild, c2[newIndex], container); // 更新相同元素的属性与子节点
