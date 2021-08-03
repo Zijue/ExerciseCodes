@@ -222,13 +222,13 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
                     result[start] = i; // 直接用当前的索引替换到老的索引
                 }
             }
-            // 从结果的最后一项开始，倒序查找回来
-            let len = result.length;
-            let last = result[len - 1];
-            while (len-- > 0) {
-                result[len] = last;
-                last = p[last]; // 通过最后一项倒序查找
-            }
+        }
+        // 从结果的最后一项开始，倒序查找回来
+        let r_len = result.length;
+        let last = result[r_len - 1];
+        while (r_len-- > 0) {
+            result[r_len] = last;
+            last = p[last]; // 通过最后一项倒序查找
         }
         return result;
     };
