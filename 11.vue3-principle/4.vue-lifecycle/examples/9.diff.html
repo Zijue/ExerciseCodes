@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
+    <script>
+        const { createApp, h, reactive, toRefs, ref } = VueRuntimeDOM;
+        // 代码在浏览器中跑，没有把模板编译成render函数的能力
+        const App = {
+            setup() { // setup中返回的是对象，那么这个对象会被用于渲染使用；如果返回的是函数，会作为render方法
+                const state = reactive({ name: 'zijue', age: 18 });
+                const flag = ref(true);
+                setTimeout(() => {
+                    flag.value = false;
+                }, 1000);
+                return { ...toRefs(state), flag }
+            },
+            // 1.前后元素不一致
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', { style: { color: 'red' } }, `hi, ${name.value}`);
+            //     } else {
+            //         return h('p', { style: { color: 'blue' } }, `hello, ${name.value}`);
+            //     }
+            // }
+
+            // 2.前后元素一致
+            // 2.1.新旧子节点都是文本
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', { style: { color: 'red' } }, `hi, ${name.value}`);
+            //     } else {
+            //         return h('div', { style: { color: 'blue' } }, `hello, ${name.value}`);
+            //     }
+            // }
+            // 2.2.新子节点是文本，旧子节点是数组
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', { style: { color: 'red' } }, [
+            //             h('li', 'A'),
+            //             h('li', 'B'),
+            //         ]);
+            //     } else {
+            //         return h('div', { style: { color: 'blue' } }, `hello, ${name.value}`);
+            //     }
+            // }
+            // 2.3.新旧子节点都是数组，尾部增加
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     } else {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //             h('li', { key: 'C' }, 'C'),
+            //             h('li', { key: 'D' }, 'D'),
+            //         ]);
+            //     }
+            // }
+            // 2.4.新旧子节点都是数组，头部增加
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     } else {
+            //         return h('div', [
+            //             h('li', { key: 'C' }, 'C'),
+            //             h('li', { key: 'D' }, 'D'),
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     }
+            // }
+            // 2.5.新旧子节点都是数组，老的节点比新的多（新节点遍历完的情况）
+            // render({ name, age, flag }) {
+            //     if (flag.value) {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //             h('li', { key: 'C' }, 'C'),
+            //             h('li', { key: 'D' }, 'D'),
+            //         ]);
+            //     } else {
+            //         return h('div', [
+            //             h('li', { key: 'A' }, 'A'),
+            //             h('li', { key: 'B' }, 'B'),
+            //         ]);
+            //     }
+            // }
+            // 2.6.新旧子节点都是数组，乱序，核心diff算法
+            render({ name, age, flag }) {
+                if (flag.value) {
+                    return h('div', [
+                        h('li', { key: 'A' }, 'A'),
+                        h('li', { key: 'B' }, 'B'),
+                        h('li', { key: 'C', style: { color: 'red' } }, 'C'),
+                        h('li', { key: 'D' }, 'D'),
+                        h('li', { key: 'E' }, 'E'),
+                        h('li', { key: 'Q' }, 'Q'),
+                        h('li', { key: 'F' }, 'F'),
+                        h('li', { key: 'G' }, 'G'),
+                    ]);
+                } else {
+                    return h('div', [
+                        h('li', { key: 'A' }, 'A'),
+                        h('li', { key: 'B' }, 'B'),
+                        h('li', { key: 'E' }, 'E'),
+                        h('li', { key: 'C', style: { color: 'blue' } }, 'C'),
+                        h('li', { key: 'D' }, 'D'),
+                        h('li', { key: 'H' }, 'H'),
+                        h('li', { key: 'F' }, 'F'),
+                        h('li', { key: 'G' }, 'G'),
+                    ]);
+                }
+            }
+        }
+        createApp(App, { name: 'zijue', age: 18 }).mount('#app');
+    </script>
+</body>
+
+</html>

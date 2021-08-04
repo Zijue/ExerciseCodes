@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <script src="../node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+    <script>
+        let { reactive, shallowReactive, readonly, shallowReadonly, effect, ref, shallowRef } = VueReactivity;
+        // let isShow = ref(true); // 将普通值变量用defineProperty定义在一个对象上
+
+        // effect(() => {
+        //     console.log(isShow.value);
+        // });
+        // setTimeout(() => {
+        //     isShow.value = false;
+        // }, 1000);
+
+        let refObj = ref({ name: 'zijue' });
+        // let refObj = shallowRef({ name: 'zijue' });
+        effect(() => {
+            // console.log(refObj.value, '触发ref');
+            console.log(refObj.value.name, '触发name属性');
+        });
+        setTimeout(() => {
+            refObj.value.name = 'xiaochi';
+        }, 1000);
+        // setTimeout(() => {
+        //     refObj.value = 'xiaochi2';
+        // }, 1000);
+
+        // let proxy = reactive({ name: ref('zijue') });
+        // console.log(proxy.name);
+    </script>
+</body>
+
+</html>

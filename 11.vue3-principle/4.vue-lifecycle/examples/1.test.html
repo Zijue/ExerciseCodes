@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="node_modules/@vue/reactivity/dist/reactivity.global.js"></script>
+    <script>
+        let { reactive, shallowReactive, readonly, shallowReadonly, effect } = VueReactivity;
+        let zijue = { name: 'zijue', age: 18, address: { city: 'wh' } };
+        let proxy = shallowReadonly(zijue); // 包装返回proxy对象，当在effect中取值时会进行依赖收集，当赋值时，会重新执行effect
+        // effect 会默认执行，执行时会手机属性的依赖；watch computed都是基于这个effect来实现的
+        effect(()=>{
+            app.innerHTML = proxy.name + ': ' + proxy.age + ': ' + proxy.address.city;
+        });
+        setTimeout(()=>{
+            proxy.name = 'xiaochi'; // 一秒后修改name属性
+        }, 1000);
+        setTimeout(()=>{
+            proxy.address.city = 'xg'; // 两秒后修改address.city属性
+        }, 2000);
+
+        // reactive 会将对象里的所有对象都进行代理 proxy
+        // shallowReactive 只代理第一层对象
+        // readonly表示会被代理 但是， 不进行依赖收集可以节约性能
+        // shallowReadonly  因为外层没有收集依赖，虽然里层能改 但是不会更新视图
+    </script>
+</body>
+
+</html>
