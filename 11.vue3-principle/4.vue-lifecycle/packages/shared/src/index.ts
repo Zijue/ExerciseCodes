@@ -32,3 +32,7 @@ export const enum ShapeFlags {
     COMPONENT_KEPT_ALIVE = 1 << 9, // 组件的keep-alive
     COMPONENT = ShapeFlags.STATEFUL_COMPONENT | ShapeFlags.FUNCTIONAL_COMPONENT
 }
+
+export function invokeArrayFns(fns) {
+    fns.forEach(fn => fn());
+}

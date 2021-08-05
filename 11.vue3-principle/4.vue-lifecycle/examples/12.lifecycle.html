@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app"></div>
+    <script src="../node_modules/@vue/runtime-dom/dist/runtime-dom.global.js"></script>
+    <script>
+        const { createApp, reactive, h, onMounted, onBeforeMount, onBeforeUpdate, onUpdated, getCurrentInstance } = VueRuntimeDOM;
+        const state = reactive({ name: 'zijue' });
+        const App = {
+            setup() {
+                onMounted(() => {
+                    let instance = getCurrentInstance(); // vue3提供的api，用于在钩子函数里获取组件实例
+                    console.log('挂载完成', instance);
+                });
+                onBeforeMount(() => {
+                    console.log('挂载前');
+                });
+                onBeforeUpdate(() => {
+                    console.log('更新前');
+                });
+                onUpdated(() => {
+                    console.log('更新后');
+                });
+                return () => {
+                    return h('h1', state.name);
+                }
+            }
+        };
+        setTimeout(() => {
+            state.name = 'xiaochi';
+            state.name = 'zijue';
+            state.name = 'xiaochi';
+        }, 1000);
+        createApp(App).mount('#app');
+
+        /*
+            挂载前
+            挂载完成 {uid: 0, vnode: {…}, type: {…}, props: null, attrs: {…}, …}
+            更新前
+            更新后
+         */
+    </script>
+</body>
+
+</html>

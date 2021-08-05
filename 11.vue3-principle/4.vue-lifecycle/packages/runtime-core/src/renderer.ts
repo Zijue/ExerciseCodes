@@ -1,5 +1,5 @@
 import { effect } from "@vue/reactivity";
-import { ShapeFlags } from "@vue/shared";
+import { invokeArrayFns, ShapeFlags } from "@vue/shared";
 import { createAppAPI } from "./apiCreateApp"
 import { createComponentInstance, setupComponent } from "./component";
 
@@ -42,19 +42,38 @@ export function createRenderer(rendererOptions) { // 不再关心是什么平台
         effect(() => { // 每次状态变化后，都会重新执行effect
             if (!instance.isMounted) {
                 // console.log('第一次渲染');
+
+                let { bm, m } = instance;
+                if (bm) {
+                    invokeArrayFns(bm);
+                }
+
                 // 组件渲染的内容就是subTree
                 let subTree = instance.render.call(instance.proxy, instance.proxy); // 调用render，render需要获取数据
                 // 将subTree赋值给instance.subTree，等数据更新后做diff算法用
                 instance.subTree = subTree;
                 patch(null, subTree, container); // 渲染子树；即render返回的是h函数创建的虚拟节点：h('div', {}, 'hi, zijue')
                 instance.isMounted = true; // 挂载完成
+
+                if (m) {
+                    invokeArrayFns(m);
+                }
             } else {
+                let { bu, u } = instance;
+                if (bu) {
+                    invokeArrayFns(bu);
+                }
+
                 const prevTree = instance.subTree; // 获取数据没变时（初始化时组件的）subTree
                 // 再次调用render，此时使用的是最新的数据渲染
                 const nextTree = instance.render.call(instance.proxy, instance.proxy);
                 instance.subTree = nextTree; // 将新的subTree赋给instance.subTree供后续更新使用
                 // 执行diff算法
                 patch(prevTree, nextTree, container);
+
+                if (u) {
+                    invokeArrayFns(u);
+                }
             }
         }, {
             scheduler: queueJob

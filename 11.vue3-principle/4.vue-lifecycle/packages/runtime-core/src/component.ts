@@ -31,13 +31,17 @@ export function setupComponent(instance) {
     // 有setup的就是带状态的组件，目前我们只处理带状态的组件
     setupStatefulComponent(instance);
 }
+// 全局对象 currentInstance
+export let currentInstance; // 用于在组件调用setup函数时，可以在函数执行过程中拿到当前组件的实例
 function setupStatefulComponent(instance) {
     let component = instance.type;
     let { setup } = component;
     if (setup) { // 说明用户提供了setup方法
         let setupContext = createSetupContext(instance);
+        currentInstance = instance; // 执行setup前，记录当前的实例
         // 用户调用setup方法可以拿到传入的属性及当前实例上下文
         let setupResult = setup(instance.props, setupContext);
+        currentInstance = null; // setup执行后，清空当前的记录
         handleSetupResult(instance, setupResult);
     } else {
         finishComponentSetup(instance); // 如果用户没写setup，那么直接用外面的render
@@ -70,4 +74,10 @@ function finishComponentSetup(instance) {
         instance.render = component.render;
     }
     // console.log(instance);
+}
+export const getCurrentInstance = () => {
+    return currentInstance;
+}
+export const setCurrentInstance = (instance) => {
+    currentInstance = instance;
 }
