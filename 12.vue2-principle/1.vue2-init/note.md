@@ -2,5 +2,5 @@
 - 安装依赖
 
 ```
-npm install rollup rollup-plugin-babel @babel/core @babel/preset-env -D
+npm install rollup rollup-plugin-resolve rollup-plugin-babel @babel/core @babel/preset-env -D
 ```

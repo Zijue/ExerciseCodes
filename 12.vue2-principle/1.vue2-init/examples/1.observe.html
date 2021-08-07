@@ -1,21 +1,77 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
 <body>
+    <div id="app">zijue{{xiaochi}}</div>
     <script src='../dist/vue.js'></script>
     <script>
-        vue = new Vue({
+        let vm = new Vue({
             el: '#app',
-            data: {
-                name: 'zijue',
-                age: 18
+            // data: {
+            //     name: 'zijue',
+            //     age: 18
+            // }
+            data() { // 组件为什么只能写函数，而实例上可以写函数或者对象？ 为了防止数据共用
+                /*
+                function Vue(){}
+                Vue.extend = function(options){
+                    function Sub(){
+                        this.data = Sub.options.data()
+                    }
+                    Sub.options = options
+                    return Sub
+                }
+
+                let Sub = Vue.extend({ // 通过此方法可以返回组件的一个子类
+                    data(){
+                        return {name:'zf'}
+                    }
+                })
+                let s1 = new Sub();
+                let s2 = new Sub();
+
+                console.log(s1.data);
+                s1.data.name = 'jw';
+                console.log(s2.data)
+
+                // 如果在Vue.extend中使用对象，那么s1、s2中data指向同一个对象，改变其中一个，另一个也会改变，这不符合逻辑
+                 */
+                return {
+                    name: 'zijue',
+                    age: 18,
+                    address: {
+                        'city': 'wh'
+                    },
+                    arr: [1, 2, 3, { a: 1 }]
+                }
             }
         });
+        // console.log(vm._data);
+        // vue2中不能给根新增属性，会重新遍历整个对象做代理，性能太差
+        // 给对象增加不存在的属性可以采用Vue.set方法或者给对象重新赋值一个新的对象（对象合并的方式）
+        vm._data.address = { ...vm._data.address, area: 100 }; // 对象合并的方式
+        // vm._data.address.a = 100; // 不会让a变成响应式的
+
+        // vue2中数组不使用defineProperty原因在于性能差（vue3如果用的是optionsApi会降为采用defineProperty，数组也是，所以vue3中不要使用vue2写法）
+        // vue2将常用的方法进行重写，修改数组本身的方法，有7个变异方法（push、pop、shift、unshift、sort、reserve、splice）
+        // 更改数组索引是无法被监控到的，更改数组长度也无法被监控到
+        vm._data.arr.push(100);
+        // vm._data.arr.length = 1; // 不会被监控
+        // vm._data.arr[1] = 100; // 也不会被监控
+        // 如果数组中存放的是对象，它会将对象进行劫持
+
+        // push方法中的...args参数如果是对象，我们需要对能新增的属性再次做拦截，将新增的属性进行代理
+        vm._data.arr.push({ b: 2 });
+        console.log(vm._data.arr)
+        console.log(vm.arr);
     </script>
 </body>
+
 </html>
