@@ -1,3 +1,4 @@
+import { callHook } from "./init";
 import Watcher from "./observer/watcher";
 import { createElement, createTextElement } from "./vdom/index";
 import { patch } from "./vdom/patch";
@@ -11,7 +12,9 @@ export function mountComponent(vm, el) {
         vm._update(vm._render());
     }
     // updateComponent();
-    new Watcher(updateComponent); // 渲染是通过watcher来进行渲染的
+    new Watcher(vm, updateComponent, () => {
+        callHook('beforeUpdate');
+    }); // 渲染是通过watcher来进行渲染的
 }
 export function lifeCycleMixin(Vue) {
     Vue.prototype._update = function (vnode) { // 虚拟dom变成真实dom进行渲染的，后续更新也调用此方法

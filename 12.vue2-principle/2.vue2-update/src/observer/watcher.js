@@ -2,25 +2,38 @@ import Dep from "./dep";
 
 let id = 0;
 class Watcher {
-    constructor(fn) {
+    constructor(vm, exprOrFn, callback, options = {}) {
         this.id = id++;
-        this.getter = fn; // 将用户传入的fn保存在getter上
+        if (typeof exprOrFn === 'function') { // 渲染调用watcher传入
+            this.getter = exprOrFn; // 将用户传入的fn保存在getter上
+        } else { // 用户传入vm.$watch
+            this.getter = () => vm[exprOrFn]; // 取值的时候会收集watcher
+        }
         this.depIds = new Set(); // 用于去重
         this.deps = []; // 存放watcher对应的dep
-        this.get();
+        this.value = this.get(); // this.value就是老的值；用于watchapi
+        this.callback = callback;
+        this.options = options; // 用户调用vm.$watch时会传入{user: true}
     }
     get() {
         Dep.target = this; // 取值之前，将watcher挂在全局上，用于在vm._render()取值时，收集属性对应的watcher
-        this.getter(); // 第一次渲染默认会调用getter（vm._update(vm._render())）取值操作
+        let value = this.getter(); // 第一次渲染默认会调用getter（vm._update(vm._render())）取值操作
         Dep.target = null;
+        return value;
     }
     update() {
-        console.log('调用更新');
+        // console.log('调用更新');
         queueWatcher(this);
     }
-    run() {
-        console.log('执行更新');
-        this.get();
+    run() { // 真正的执行
+        let oldValue = this.value;
+        let newValue = this.get();
+        if (this.options.user) { // 只有标识是用户watchapi传入，才执行回调函数
+            this.callback(newValue, oldValue);
+        }
+
+        // console.log('执行更新');
+        // this.get();
     }
     addDep(dep) {
         let depId = dep.id;

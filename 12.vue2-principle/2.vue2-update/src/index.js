@@ -1,10 +1,12 @@
 import { initMixin } from "./init";
+import { initGlobalAPI } from "./initGlobalAPI/index";
 import { lifeCycleMixin } from "./lifecycle";
 
 function Vue(options) { // 构造函数，采用optionsApi
     this._init(options);
 }
 // 给Vue的构造函数扩展原型方法和静态方法
+initGlobalAPI(Vue);
 initMixin(Vue);
 lifeCycleMixin(Vue);
 export default Vue;

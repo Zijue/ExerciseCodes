@@ -37,5 +37,14 @@ function initComputed(vm) {
     console.log('computed init')
 }
 function initWatch(vm) {
-    console.log('watch init')
+    // console.log('watch init')
+    const watch = vm.$options.watch;
+    // 给每一个属性都创建一个watcher
+    for (let key in watch) {
+        createWatcher(vm, key, watch[key]);
+    }
+}
+// watcher可以分为：渲染watcher、用户watcher、计算属性watcher
+function createWatcher(vm, key, callback) {
+    return vm.$watch(key, callback); // 监控某个属性和对应的处理函数
 }
