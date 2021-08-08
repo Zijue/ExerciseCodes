@@ -14,7 +14,8 @@ export function mountComponent(vm, el) {
 export function lifeCycleMixin(Vue) {
     Vue.prototype._update = function (vnode) { // 虚拟dom变成真实dom进行渲染的，后续更新也调用此方法
         // console.log(vnode);
-        patch(this.$el, vnode);
+        patch(this.$el, vnode); // 初次渲染，传入一个真实的dom和vnode
+        // 更新，传入两个虚拟节点vnode，diff算法
     }
     Vue.prototype._c = function () { // _c('div',undefoined,[])
         return createElement(this, ...arguments)
