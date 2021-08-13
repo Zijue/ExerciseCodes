@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!--咱们再模板编译时，有一个非常重要的代码就是JSON.stringify，意味着会访问对象里的所有属性-->
+    <div id="app" style="color:red">hello, {{name}}{{age}}</div>
+    <script src='../dist/vue.js'></script>
+    <script>
+        // let vm = new Vue({
+        //     el: '#app',
+        //     data() {
+        //         return {
+        //             name: 'zijue',
+        //             age: 18,
+        //             arr: [1, 2, 3]
+        //         }
+        //     }
+        // });
+        // setTimeout(() => {
+        //     vm.arr.push(100);
+        // }, 1000);
+
+        // let vm = new Vue({
+        //     el: '#app',
+        //     data() {
+        //         return {
+        //             name: 'zijue',
+        //             age: 18,
+        //             arr: [{ 'a': 1 }, [1]]
+        //         }
+        //     }
+        // });
+        // setTimeout(() => {
+        //     vm.arr[0].a = 100;
+        //     vm.arr[1].push(100); // 需要对数组的子项遍历，如果是对象或者数组，同样需要进行依赖收集
+        // }, 1000);
+
+        // 1.数组的依赖收集是靠数组的本身，如果数组里包含着对象也要让数组中的对象进行依赖收集
+        // 2.对象直接让属性进行依赖收集即可，如果属性对应的值是对象或者数组也会进行依赖收集
+
+        let vm = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    name: 'zijue',
+                    age: 18,
+                }
+            }
+        });
+        setTimeout(() => { // 修改不同的值会触发多次更新，需要做异步更新处理
+            vm.name = 'xiaochi';
+            vm.age = 28;
+        }, 1000);
+    </script>
+</body>
+
+</html>
