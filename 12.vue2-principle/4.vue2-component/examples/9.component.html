@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- 组件化的优点：复用、好维护、组件级更新；组件的三大特性：属性、样式、插槽 webcomponent -->
+    <div id="app">
+        <my-button></my-button>
+        <my-button></my-button>
+        <my-button></my-button>
+    </div>
+    <script src="../dist/vue.js"></script>
+    <!-- 全局组件 （不用在组件内部注册可以直接使用） 局部组件 （我们定义后 只能在当前组件中使用）-->
+    <!-- Vue.options.components , 当实例化某个组件的时候 可以把全局的和自己的合并起来 -->
+    <!-- 全局组件和局部组件重名用谁的  xxx.__proto__ -->
+    <script>
+        // 组件的父子关系  new Vue(父亲)  my-button(儿子)  类的继承
+        // Vue.component 注册一个全局组件，Vue.extend 返回一个子类的构造函数
+        // Vue.component 在组件中声明一个components属
+        Vue.component('my-button', { // 全局的会被定义在实例的 vm.__proto__
+            data() {
+                return { a: 1 }
+            },
+            template: '<button>我的按钮 {{a}}</button>'
+        });
+        let vm = new Vue({
+            components: {
+                'my-button': {
+                    data() {
+                        return { b: 2 }
+                    },
+                    template: '<button>内部按钮 {{b}}</button>'
+                }
+            },
+            el: '#app'
+        });
+        // 组件的渲染流程：
+        // 1.需要产生虚拟节点，组件的虚拟节点属性中包含这初始化的钩子函数init，同时组件的虚拟节点上拥有一个componentOptions属性（它包含Ctor）
+        // 2.渲染真实节点，就是new Ctor创建子组件的实例，去走Vue的初始化流程，初始化完毕后，就会返回一个实例上包含着真实的dom元素，我们会将元素插入到页面上
+        // 3.完成渲染逻辑
+    </script>
+</body>
+
+</html>

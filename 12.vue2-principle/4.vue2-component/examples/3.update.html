@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!--调用render的时候，会进行取值，取name和age的时候，就让name和age记住重新渲染的逻辑-->
+    <!--vue2中给每一个属性都配备了一个dep属性，用于依赖收集-->
+    <!-- <div id="app" style="color:red">hello, {{name}}<span>{{age}}</span></div> -->
+    <div id="app" style="color:red">hello, {{name}}{{name}}{{name}}</div>
+    <script src='../dist/vue.js'></script>
+    <script>
+        let vm = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    name: 'zijue',
+                    age: 18
+                }
+            }
+        });
+        setTimeout(() => {
+            vm.age = 100;
+            // vm._update(vm._render()); // 这样写太傻比了，肯定需要自动更新
+        }, 1000);
+        // 1.默认内部会先将data数据中的数据进行劫持 采用的是defineProperty
+        // 2.如果用户提供了el属性 会去查找有没有template，render如果没有传递则使用el对应的html作为模板
+        // 3.拿到模板变成render函数 渲染逻辑，当调用render时会进行取值
+        // 4.在创建之前 生成一个渲染watcher， 给每个属性增加了一个dep属性, 此时会将watcher放到全局上，再去调用渲染方法，每个属性对应的dep会收集这个watcher
+        // 5.如果多个属性多次在模板中取值 我们需要过滤 (name)dep -> watcher  我们希望watcher和dep是有关系的  一个dep对应多个watcher（一个watcher对应一个组件，一个属性可以在多个组件中取值）  一个watcher还对应多个dep（一个组件可能有多个属性渲染）  多对多的关系
+        // 我们需要将dep和watcher产生关联 后面计算属性都是基于dep和watcher的
+    </script>
+</body>
+
+</html>
