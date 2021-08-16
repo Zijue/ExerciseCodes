@@ -16,4 +16,13 @@ class Dep {
     }
 }
 Dep.target = null; // 用于全局挂载对应的watcher
+const stack = []; // 用栈记住不同层级的watcher [渲染watcher, 计算属性watcher]
+export function pushTarget(watcher) {
+    stack.push(watcher); // Dep.target = wathcer
+    Dep.target = watcher;
+}
+export function popTarget() {
+    stack.pop(); // Dep.target = null;
+    Dep.target = stack[stack.length - 1];
+}
 export default Dep;

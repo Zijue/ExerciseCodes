@@ -1,4 +1,4 @@
-import Dep from "./dep";
+import Dep, { popTarget, pushTarget } from "./dep";
 
 let id = 0;
 class Watcher {
@@ -11,19 +11,30 @@ class Watcher {
         }
         this.depIds = new Set(); // 用于去重
         this.deps = []; // 存放watcher对应的dep
-        this.value = this.get(); // this.value就是老的值；用于watchapi
+        this.vm = vm;
+        this.lazy = options.lazy; // lazy为true则不要直接调用get方法
+        this.dirty = this.lazy; // 计算属性默认dirty是true
+        // this.value = this.get(); // this.value就是老的值；用于watchapi
+        this.value = this.lazy ? undefined : this.get(); // 默认lazy就不要执行调用方法
         this.callback = callback;
         this.options = options; // 用户调用vm.$watch时会传入{user: true}
     }
     get() {
-        Dep.target = this; // 取值之前，将watcher挂在全局上，用于在vm._render()取值时，收集属性对应的watcher
-        let value = this.getter(); // 第一次渲染默认会调用getter（vm._update(vm._render())）取值操作
-        Dep.target = null;
+        // Dep.target = this; // 取值之前，将watcher挂在全局上，用于在vm._render()取值时，收集属性对应的watcher
+        pushTarget(this);
+        // let value = this.getter(); // 第一次渲染默认会调用getter（vm._update(vm._render())）取值操作
+        let value = this.getter.call(this.vm); // 绑定vm执行，保证计算属性中的this指向正确
+        // Dep.target = null;
+        popTarget(); // [渲染watcher, 计算属性watcher] => [渲染watcher]
         return value;
     }
     update() {
-        // console.log('调用更新');
-        queueWatcher(this);
+        if (this.lazy) { // 计算属性不更新
+            this.dirty = true; // 如果依赖的属性变化了，就让计算属性watcher的dirty在变为true，这样下次取值就能进入evaluate中的流程
+        } else {
+            // console.log('调用更新');
+            queueWatcher(this);
+        }
     }
     run() { // 真正的执行
         let oldValue = this.value;
@@ -41,6 +52,16 @@ class Watcher {
             this.depIds.add(depId);
             this.deps.push(dep); // 让watcher记住dep
             dep.addWatcher(this); // 同时让dep记住watcher
+        }
+    }
+    evaluate() {
+        this.value = this.get();
+        this.dirty = false;
+    }
+    depend() {
+        let l = this.deps.length; // name，age的Dep
+        while (l--) { // [渲染watcher]
+            this.deps[l].depend(); // 让属性记住渲染watcher
         }
     }
 }

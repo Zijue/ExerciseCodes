@@ -1,4 +1,6 @@
+import Dep from "./observer/dep";
 import { observe } from "./observer/index";
+import Watcher from "./observer/watcher";
 
 export function initState(vm) {
     const options = vm.$options;
@@ -33,8 +35,35 @@ function initData(vm) {
     }
     observe(data); // 对数据进行观测
 }
+function defineComputed(target, key, fn) { // vm, firstname, 用户的函数
+    Object.defineProperty(target, key, {
+        get() {
+            const watcher = target._computedWatchers[key]; // 当用户取值时，会拿到缓存的watcher
+            // 计算属性watcher上有一个dirty属性
+            if (watcher && watcher.dirty) {
+                watcher.evaluate(); // 求值操作，求值后将dirty变为false
+            }
+            // 我们需要让计算属性依赖的name/age收集上一层的依赖，使页面刷新
+            // Dep.target = 渲染watcher  [name, age]
+            // console.log(watcher.deps); // [Dep, Dep]
+            if (Dep.target) {
+                watcher.depend();
+            }
+            return watcher.value;
+        }
+    })
+}
 function initComputed(vm) {
-    console.log('computed init')
+    const computed = vm.$options.computed;
+    // 每一个计算属性都是一个watcher
+    const watchers = vm._computedWatchers = {}; // 存储计算属性的所有watcher存到实例上
+    for (let key in computed) {
+        let userDef = computed[key];
+        watchers[key] = new Watcher(vm, userDef, () => { }, { lazy: true });
+        // 将计算属性与watcher关联之后，还需要将计算属性代理到vm实例上，便于通过vm.firstname取值
+        defineComputed(vm, key, userDef); // Object.defineProperty
+    }
+    // console.log(watchers);
 }
 function initWatch(vm) {
     // console.log('watch init')
