@@ -1,0 +1,10 @@
+@import "./bg.css";
+body{
+    color: red;
+}
+#transform{
+    background-color: hotpink;
+    width: 200px;
+    height: 50px;
+    transform: rotate(45deg);
+}
