@@ -49,7 +49,7 @@ module.exports = {
         jquery: 'jQuery'
     },
     resolve: {
-        alias: {
+        alias: { // 别名，可以在url引入中使用，例如：background-image: url(@/images/cyt.jpg)
             '@': path.resolve(__dirname, 'src')
         }
     },
