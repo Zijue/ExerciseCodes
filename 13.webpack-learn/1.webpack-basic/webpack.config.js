@@ -48,6 +48,11 @@ module.exports = {
     externals: {
         jquery: 'jQuery'
     },
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, 'src')
+        }
+    },
     module: {
         rules: [
             // { // 此处也可以不写，使用行内loader的方式（inline）
@@ -63,7 +68,7 @@ module.exports = {
             // use的意思是使用哪些loader进行转换，转换顺序从右往左
             // 最右边的loader接收源文件，最左侧的loader返回一个JS脚本
             // 为什么不用一个loader干所有的事情，而是把几个小loader串联起来使用，loader有一个单一原则，每个loader只做单一一件事情
-            { test: /\.txt$/, use: 'raw-loader' },
+            { test: /\.txt$/, use: 'asset/source' /**代替raw-loader */ },
             // { test: /\.css$/, use: ['style-loader', 'css-loader'] },
             // { test: /\.less$/, use: ['style-loader', 'css-loader', 'less-loader'] },
             // { test: /\.scss$/, use: ['style-loader', 'css-loader', 'sass-loader'] },
@@ -76,18 +81,28 @@ module.exports = {
             { test: /\.less$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'less-loader'] },
             { test: /\.scss$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'] },
             {
-                test: /\.(jpg|png|bmp|gif|svg)$/, use: [{
-                    // loader: 'file-loader', // 可以把src目录里依赖的源图片文件拷贝到目标目录里去，文件名一般为新的hash值
-
-                    loader: 'url-loader', // url-loader可以配置参数
-                    options: {
-                        esModule: false, // 设置为false，图片使用不需要加.default
-                        name: '[hash:8].[ext]',
-                        limit: 8 * 1024, // 如果文件太小，不需要拷贝文件，也不需要发http请求，只需要把文件变成base64字符串内嵌到html页面中
-                        // outputPath: 'images', // 指定输出的目录
-                        // publicPath: '/images' // 指定引入的目录
+                test: /\.(jpg|png|bmp|gif|svg)$/,
+                /** webpack5中使用asset模块代替raw-loader、file-loader、url-loader
+                 * https://webpack.docschina.org/guides/asset-modules/#source-assets
+                 */
+                type: 'asset',
+                parser: {
+                    dataUrlCondition: {
+                        maxSize: 4 * 1024 // 4kb
                     }
-                }]
+                }
+                // use: [{
+                //     // loader: 'file-loader', // 可以把src目录里依赖的源图片文件拷贝到目标目录里去，文件名一般为新的hash值
+
+                //     loader: 'url-loader', // url-loader可以配置参数
+                //     options: {
+                //         esModule: false, // 设置为false，图片使用不需要加.default
+                //         name: '[hash:8].[ext]',
+                //         limit: 8 * 1024, // 如果文件太小，不需要拷贝文件，也不需要发http请求，只需要把文件变成base64字符串内嵌到html页面中
+                //         // outputPath: 'images', // 指定输出的目录
+                //         // publicPath: '/images' // 指定引入的目录
+                //     }
+                // }]
             },
             {
                 test: /\.js$/,

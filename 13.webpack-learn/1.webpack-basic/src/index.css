@@ -1,4 +1,4 @@
-@import "./bg.css";
+/* @import "./bg.css"; */
 body{
     color: red;
 }
@@ -7,4 +7,9 @@ body{
     width: 200px;
     height: 50px;
     transform: rotate(45deg);
+}
+#image-cyt{
+    width: 100px;
+    height: 100px;
+    background-image: url(@/images/cyt.jpg);
 }
