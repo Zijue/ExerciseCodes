@@ -11,5 +11,18 @@ body{
 #image-cyt{
     width: 100px;
     height: 100px;
+    background-image: url(~@/images/cyt.jpg);
+    /*
+        images/cyt.jpg 表示src目录下images/cyt.jpg文件
+        @ 表示别名，需要在webpack.config.js中配置alias
+            @/images/cyt.jpg 表示在@所指的目录下的images/cyt.jpg文件
+        ~ 表示在node_module目录下查找images/cyt.jpg文件
+            例如：~images/cyt.jpg
+        ~@ 效果与 @一致
+    */
+}
+.iconCyt{ /* css-module演示 */
+    width: 100px;
+    height: 100px;
     background-image: url(@/images/cyt.jpg);
 }

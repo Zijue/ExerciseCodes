@@ -35,3 +35,9 @@ import './sass.scss';
 // console.log(jQuery);
 
 // fetch('/api/users').then((res) => res.json()).then(data => console.log(data));
+
+// 如何使用css-module，同时需要在css-loader中进行配置
+// import React from 'react';
+// import ReactDOM from 'react-dom';
+// import styles from './index.css'
+// ReactDOM.render(<div className={styles.iconCyt}>hello</div>, document.getElementById('root'));

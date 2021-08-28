@@ -17,12 +17,12 @@ module.exports = {
         // publicPath 表示的是打包生成的index.html文件里面引用资源的前缀
         // publicPath: 'zijue' // <script defer src="zijue/main.js"></script></head>
     },
-    watch: true, // 默认false，不开启
-    watchOptions: { // 只有当watch=true时，此配置项才有意义
-        ignored: /node_modules/, // 默认为空，表示不监听哪些文件或者文件夹，支持正则匹配
-        aggregateTimeout: 300, // 监听到变化发生后会等300ms再去执行，默认300ms（防抖）
-        poll: 1000 // 判断文件是否发生变化，是通过不停的轮询文件系统是否有变化实现的，默认每秒问1000次
-    },
+    // watch: true, // 默认false，不开启
+    // watchOptions: { // 只有当watch=true时，此配置项才有意义
+    //     ignored: /node_modules/, // 默认为空，表示不监听哪些文件或者文件夹，支持正则匹配
+    //     aggregateTimeout: 300, // 监听到变化发生后会等300ms再去执行，默认300ms（防抖）
+    //     poll: 1000 // 判断文件是否发生变化，是通过不停的轮询文件系统是否有变化实现的，默认每秒问1000次
+    // },
     devServer: { // 内部就是一个express服务器
         static: path.resolve(__dirname, 'static'), // 额外的静态文件的根目录，在开发服务器下静态代理static文件夹
         compress: true, // 是否启动压缩
@@ -77,6 +77,16 @@ module.exports = {
             // { test: /\.less$/, use: ['style-loader', 'css-loader', 'postcss-loader', 'less-loader'] },
             // { test: /\.scss$/, use: ['style-loader', 'css-loader', 'postcss-loader', 'sass-loader'] },
             // 提取css文件，需要将style-loader替换成MiniCssExtractPlugin.loader
+            // {
+            //     test: /\.css$/, use: [MiniCssExtractPlugin.loader, {
+            //         loader: 'css-loader',
+            //         options: {
+            //             modules: { // 启用css-module
+            //                 mode: 'local'
+            //             }
+            //         }
+            //     }, 'postcss-loader']
+            // },
             { test: /\.css$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader'] },
             { test: /\.less$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'less-loader'] },
             { test: /\.scss$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'] },
