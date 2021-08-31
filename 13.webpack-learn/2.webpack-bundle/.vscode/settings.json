@@ -1,0 +1,11 @@
+{
+    "rm-js-comment.replacer": {
+        "__webpack_modules__": "modules",
+        "__unused_webpack_module": "module",
+        "__unused_webpack_exports": "exports",
+        "__webpack_require__": "require",
+        "__webpack_module_cache__": "cache",
+        "__webpack_exports__": "exports",
+        "__WEBPACK_DEFAULT_EXPORT__": "DEFAULT_EXPORT"
+    }
+}
