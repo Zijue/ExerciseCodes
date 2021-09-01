@@ -8,7 +8,7 @@ const babelImportPlugin = {
                 // console.log(state)
                 let { node } = nodePath;
                 let {
-                    opts: { libraryName, libraryDirectory }
+                    opts: { libraryName, libraryDirectory } // 这个就是在webpack中调用此插件时调用时传递的参数
                 } = state;
                 let source = node.source; // lodash
                 let specifiers = node.specifiers; // 引入的变量
