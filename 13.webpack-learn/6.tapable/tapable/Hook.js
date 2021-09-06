@@ -59,7 +59,40 @@ class Hook {
     }
     _insert(tapInfo) {
         this._resetCompilation(); // 每次调用call或者promise方法时，重新编译；为了处理调用call或promise方法后，还想添加事件函数的情况
+
+        let before = new Set();
+        if (typeof tapInfo.before === 'string') {
+            before = new Set([tapInfo.before]);
+        } else if (Array.isArray(tapInfo.before)) {
+            before = new Set(tapInfo.before);
+        }
+
+        // 在插入时要按stage的顺序插入
+        let stage = 0; // 默认值为0
+        if (typeof tapInfo.stage === 'number') {
+            stage = tapInfo.stage;
+        }
         let i = this.taps.length; // 插入事件函数对象时总的长度
+        while (i > 0) { // 类似插入排序，查找要插入的位置
+            i--;
+            const x = this.taps[i];
+            this.taps[i + 1] = x;
+            const xStage = x.stage || 0;
+            if (before) { // 
+                if (before.has(x.name)) {
+                    before.delete(x.name);
+                    continue;
+                }
+                if (before.size > 0) {
+                    continue;
+                }
+            }
+            if (xStage > stage) {
+                continue;
+            }
+            i++;
+            break;
+        } // 找到了需要插入的位置后，直接赋值
         this.taps[i] = tapInfo; // 直接存入了对应的位置，不用push的原因是，不一定都是往数组尾部添加
     }
     _createCall(type) {
