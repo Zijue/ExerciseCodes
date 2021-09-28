@@ -1,5 +1,6 @@
 import { REACT_ELEMENT } from './constants';
 import { wrapToVdom } from './utils';
+import { Component } from './component';
 
 function createElement(type, props, children) {
     let ref, key;
@@ -9,6 +10,8 @@ function createElement(type, props, children) {
         key = props.key; //用来进行DIFF优化的，唯一标识某个子元素
         delete props.ref;
         delete props.key;
+        delete props.__self;
+        delete props.__source;
     }
     if (arguments.length > 3) { //如果参数的长度大于3，说明有多个子节点
         props.children = Array.prototype.slice.call(arguments, 2).map(wrapToVdom);
@@ -40,6 +43,7 @@ function createElement(type, props, children) {
     }
 }
 const React = {
-    createElement
+    createElement,
+    Component
 }
 export default React;

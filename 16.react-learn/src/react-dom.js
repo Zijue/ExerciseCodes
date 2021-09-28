@@ -6,6 +6,7 @@ import { REACT_TEXT } from "./constants";
  * @param {*} container 真实dom容器
  */
 function render(vdom, container) {
+    debugger
     mount(vdom, container); //挂载方法
 }
 function mount(vdom, container) {
@@ -24,6 +25,12 @@ function createDOM(vdom) {
     let dom; //真实dom
     if (type === REACT_TEXT) { //创建文本节点
         dom = document.createTextNode(props.content);
+    } else if (typeof type === 'function') { //函数组件/类组件（类最后都会编译成函数）
+        if (type.isReactComponent) { //类组件
+            return mountClassComponent(vdom);
+        } else { //函数组件
+            return mountFunctionComponent(vdom);
+        }
     } else { //创建dom节点：span、h1、div、p等
         dom = document.createElement(type);
     }
@@ -41,6 +48,19 @@ function createDOM(vdom) {
     vdom.dom = dom; //在虚拟dom挂载或者说放置一个dom属性指向此虚拟dom对应的真实dom
     return dom;
 }
+function mountFunctionComponent(vdom) { //挂载函数组件
+    let { type: functionComponent, props } = vdom;
+    let renderVdom = functionComponent(props); //执行函数组件的函数，获取需要渲染的虚拟dom返回值
+    vdom.oldRenderVdom = renderVdom; //记录老的渲染虚拟dom，供后续diff用
+    return createDOM(renderVdom);
+}
+function mountClassComponent(vdom) { //挂载类组件
+    let { type: ClassComponent, props } = vdom;
+    let classInstance = new ClassComponent(props); //创建类组件的实例
+    let renderVdom = classInstance.render(); //调动实例的render方法
+    classInstance.oldRenderVdom = renderVdom; //将类组件实例与老的虚拟DOM关联
+    return createDOM(renderVdom);
+}
 function reconcilChildren(children, parentDOM) {
     children.forEach(childVdom => mount(childVdom, parentDOM));
 }
@@ -53,6 +73,9 @@ function updateProps(dom, oldProps, newProps) {
             for (let attr in styleObj) {
                 dom.style[attr] = styleObj[attr];
             }
+        } else if (/^on[A-Z].*/.test(key)) { //说明是一个事件处理函数
+            //DOM.onclick = 事件处理函数;
+            dom[key.toLowerCase()] = newProps[key];
         } else {
             dom[key] = newProps[key];
         }
@@ -63,6 +86,11 @@ function updateProps(dom, oldProps, newProps) {
             dom[key] = null;
         }
     }
+}
+export function compareTwoVdom(parentDOM, oldVdom, newVdom) {
+    let oldDOM = oldVdom.dom;
+    let newDOM = createDOM(newVdom);
+    parentDOM.replaceChild(newDOM, oldDOM);
 }
 const ReactDOM = {
     render
