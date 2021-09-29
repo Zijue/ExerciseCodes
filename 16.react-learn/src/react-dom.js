@@ -21,7 +21,7 @@ function mount(vdom, container) {
  * @returns 真实dom
  */
 function createDOM(vdom) {
-    let { type, props } = vdom;
+    let { type, props, ref } = vdom;
     let dom; //真实dom
     if (type === REACT_TEXT) { //创建文本节点
         dom = document.createTextNode(props.content);
@@ -46,6 +46,7 @@ function createDOM(vdom) {
         }
     }
     vdom.dom = dom; //在虚拟dom挂载或者说放置一个dom属性指向此虚拟dom对应的真实dom
+    if (ref) ref.current = dom;
     return dom;
 }
 function mountFunctionComponent(vdom) { //挂载函数组件

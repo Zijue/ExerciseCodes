@@ -42,8 +42,12 @@ function createElement(type, props, children) {
         props //元素的属性，如className style children
     }
 }
+function createRef() {
+    return { current: null }
+}
 const React = {
     createElement,
-    Component
+    Component,
+    createRef
 }
 export default React;
