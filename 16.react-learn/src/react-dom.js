@@ -1,4 +1,5 @@
 import { REACT_TEXT } from "./constants";
+import { addEvent } from "./event";
 
 /**
  * 将虚拟dom渲染挂载到指定的真实dom容器上
@@ -6,7 +7,6 @@ import { REACT_TEXT } from "./constants";
  * @param {*} container 真实dom容器
  */
 function render(vdom, container) {
-    debugger
     mount(vdom, container); //挂载方法
 }
 function mount(vdom, container) {
@@ -75,7 +75,8 @@ function updateProps(dom, oldProps, newProps) {
             }
         } else if (/^on[A-Z].*/.test(key)) { //说明是一个事件处理函数
             //DOM.onclick = 事件处理函数;
-            dom[key.toLowerCase()] = newProps[key];
+            // dom[key.toLowerCase()] = newProps[key];
+            addEvent(dom, key.toLowerCase(), newProps[key]);
         } else {
             dom[key] = newProps[key];
         }

@@ -1,6 +1,6 @@
 import React from './react';
 import ReactDOM from './react-dom';
-import { updateQueue } from './component';
+// import { updateQueue } from './component';
 
 /**
  * 1.组件的数据来源有两个，一个是来自于父组件的属性，组件内可以通过this.props获取，属性是父组件的不能修改
@@ -28,7 +28,7 @@ class Counter extends React.Component {
         this.state = { number: 0 }; //唯一能给state赋值的地方只有构造函数
     }
     handleClick = (event) => {
-        updateQueue.isBatchingUpdate = true;
+        // updateQueue.isBatchingUpdate = true; //这样写是可以，但是需要用户这样写，不是爆炸？
 
         //更改状态的时候，只需要传递更新的变量即可
         /**需要注意的是：调用了setState之后，状态this.state并没有立刻修改，而是等handleClick执行完了之后才去更新 */
@@ -44,8 +44,8 @@ class Counter extends React.Component {
             console.log(this.state);
         });
 
-        updateQueue.isBatchingUpdate = false;
-        updateQueue.batchUpdate();
+        // updateQueue.isBatchingUpdate = false;
+        // updateQueue.batchUpdate();
 
         /**每次结果+2 */
         // this.setState(state => ({ number: state.number + 1 }));
@@ -53,9 +53,12 @@ class Counter extends React.Component {
         // this.setState(state => ({ number: state.number + 1 }));
         // console.log(this.state);
     }
+    handleParentClick(event) {
+        console.log('handleParentClick')
+    }
     render() {
         return (
-            <div>
+            <div onClick={this.handleParentClick}>
                 <p>{this.state.number}</p>
                 <button onClick={this.handleClick}>+</button>
             </div>
