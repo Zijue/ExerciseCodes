@@ -1,4 +1,4 @@
-import { REACT_ELEMENT } from './constants';
+import { REACT_ELEMENT, REACT_FORWARD_REF } from './constants';
 import { wrapToVdom } from './utils';
 import { Component } from './component';
 
@@ -45,9 +45,20 @@ function createElement(type, props, children) {
 function createRef() {
     return { current: null }
 }
+/**
+ * 
+ * @param {*} render 就是指的需要转发ref的函数组件
+ */
+function forwardRef(render) {
+    return {
+        $$typeof: REACT_FORWARD_REF,
+        render
+    }
+}
 const React = {
     createElement,
     Component,
-    createRef
+    createRef,
+    forwardRef
 }
 export default React;
