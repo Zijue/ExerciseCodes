@@ -26,9 +26,9 @@ class Updater {
         }
     }
     updateComponent() {
-        let { classInstance, pendingStates } = this;
+        let { classInstance, pendingStates, nextProps } = this;
         if (pendingStates.length > 0) {
-            shouldUpdate(classInstance, this.getState());
+            shouldUpdate(classInstance, nextProps, this.getState());
         }
     }
     getState() { //基于老的状态和pendingStates获取新状态
@@ -44,9 +44,25 @@ class Updater {
         return state;
     }
 }
-function shouldUpdate(classInstance, nextState) {
-    classInstance.state = nextState; //将新的状态赋给类的实例上的state属性
-    classInstance.forceUpdate(); //让类组件的实例强行更新
+function shouldUpdate(classInstance, nextProps, nextState) {
+    // classInstance.state = nextState; //将新的状态赋给类的实例上的state属性
+    // classInstance.forceUpdate(); //让类组件的实例强行更新
+    let willUpdate = true;
+    //如果有shouldComponentUpdate方法，并且shouldComponentUpdate执行结果是false的话，
+    //才会将willUpdate设置false
+    if (
+        classInstance.shouldComponentUpdate &&
+        !classInstance.shouldComponentUpdate(nextProps, nextState)
+    ) {
+        willUpdate = false;
+    }
+    if (willUpdate && classInstance.componentWillUpdate) {
+        classInstance.componentWillUpdate();
+    }
+    classInstance.state = nextState; //不管要不要更新，赋值都会执行
+    if (willUpdate) {
+        classInstance.forceUpdate();
+    }
 }
 export class Component {
     /* 因为函数组件和类组件都会在编译后成为函数，
@@ -68,6 +84,10 @@ export class Component {
         //oldDOM真实DOM元素，.parentNode属于原生dom-api
         compareTwoVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom);
         this.oldRenderVdom = newRenderVdom;
+
+        if (this.componentDidUpdate) {
+            this.componentDidUpdate(this.props, this.state);
+        }
     }
 }
 /**

@@ -14,6 +14,10 @@ function mount(vdom, container) {
     let newDOM = createDOM(vdom);
     //把真实DOM追加到容器上
     container.appendChild(newDOM);
+
+    if (newDOM.componentDidMount) {
+        newDOM.componentDidMount();
+    }
 }
 /**
  * 把虚拟dom变成真实dom
@@ -66,9 +70,19 @@ function mountClassComponent(vdom) { //挂载类组件
     let { type: ClassComponent, props, ref } = vdom;
     let classInstance = new ClassComponent(props); //创建类组件的实例
     if (ref) ref.current = classInstance; //类组件的ref指向类组件的实例
+
+    if (classInstance.componentWillMount) { //调用生命周期函数
+        classInstance.componentWillMount();
+    }
+
     let renderVdom = classInstance.render(); //调动实例的render方法
     vdom.oldRenderVdom = classInstance.oldRenderVdom = renderVdom; //将类组件实例与老的虚拟DOM关联
-    return createDOM(renderVdom);
+    // return createDOM(renderVdom);
+    let dom = createDOM(renderVdom);
+    if (classInstance.componentDidMount) {
+        dom.componentDidMount = classInstance.componentDidMount;
+    }
+    return dom;
 }
 function reconcilChildren(children, parentDOM) {
     children.forEach(childVdom => mount(childVdom, parentDOM));

@@ -1,29 +1,42 @@
 import React from './react';
 import ReactDOM from './react-dom';
 
-class Three extends React.Component {
-    render() {
-        return <div>Three:{this.props.number}</div>
-    }
-}
-function Two(props) {
-    return <Three {...props} />
-}
-class One extends React.Component {
+/**
+ * 组件的生命周期
+ */
+class Counter extends React.Component {
     constructor(props) {
         super(props);
         this.state = { number: 0 };
-        setTimeout(() => {
-            this.setState({ number: 1 });
-        }, 1000);
+        console.log('Counter 1.constructor');
+    }
+    componentWillMount() {
+        console.log('Counter 2.componentWillMount');
+    }
+    componentDidMount() {
+        console.log('Counter 4.componentDidMount');
+    }
+    handleClick = () => {
+        this.setState({ number: this.state.number + 1 })
+    }
+    shouldComponentUpdate(nextProps, nextState) {
+        console.log('Counter 5.shouldComponentUpdate');
+        return nextState.number % 2 === 0; //奇数页面不刷新，偶数页面刷新
+    }
+    componentWillUpdate() {
+        console.log('Counter 6.componentWillUpdate');
+    }
+    componentDidUpdate() {
+        console.log('Counter 7.componentDidUpdate');
     }
     render() {
-        return <Two number={this.state.number} />
+        console.log('Counter 3.render');
+        return (
+            <div>
+                <p>{this.state.number}</p>
+                <button onClick={this.handleClick}>+</button>
+            </div>
+        )
     }
 }
-ReactDOM.render(<One />, document.getElementById('root'));
-/**
- * Warning: Function components cannot be given refs.
- * Attempts to access this ref will fail.
- * Did you mean to use React.forwardRef()?
- */
+ReactDOM.render(<Counter />, document.getElementById('root'));
