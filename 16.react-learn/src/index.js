@@ -1,30 +1,27 @@
 import React from './react';
 import ReactDOM from './react-dom';
 
-function TextInput(props, ref) {
-    return <input ref={ref} />
+class Three extends React.Component {
+    render() {
+        return <div>Three:{this.props.number}</div>
+    }
 }
-const ForwardTextInput = React.forwardRef(TextInput);
-console.log(ForwardTextInput);
-class Form extends React.Component {
+function Two(props) {
+    return <Three {...props} />
+}
+class One extends React.Component {
     constructor(props) {
         super(props);
-        this.input = React.createRef();
-    }
-    getFocus = () => {
-        this.input.current.focus();
+        this.state = { number: 0 };
+        setTimeout(() => {
+            this.setState({ number: 1 });
+        }, 1000);
     }
     render() {
-        //最终ref传递的this.input指向了TextInput的原生input
-        return (
-            <div>
-                <ForwardTextInput ref={this.input} />
-                <button onClick={this.getFocus}>获取焦点</button>
-            </div>
-        )
+        return <Two number={this.state.number} />
     }
 }
-ReactDOM.render(<Form />, document.getElementById('root'));
+ReactDOM.render(<One />, document.getElementById('root'));
 /**
  * Warning: Function components cannot be given refs.
  * Attempts to access this ref will fail.

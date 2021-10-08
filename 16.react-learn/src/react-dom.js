@@ -67,7 +67,7 @@ function mountClassComponent(vdom) { //挂载类组件
     let classInstance = new ClassComponent(props); //创建类组件的实例
     if (ref) ref.current = classInstance; //类组件的ref指向类组件的实例
     let renderVdom = classInstance.render(); //调动实例的render方法
-    classInstance.oldRenderVdom = renderVdom; //将类组件实例与老的虚拟DOM关联
+    vdom.oldRenderVdom = classInstance.oldRenderVdom = renderVdom; //将类组件实例与老的虚拟DOM关联
     return createDOM(renderVdom);
 }
 function reconcilChildren(children, parentDOM) {
@@ -98,9 +98,22 @@ function updateProps(dom, oldProps, newProps) {
     }
 }
 export function compareTwoVdom(parentDOM, oldVdom, newVdom) {
-    let oldDOM = oldVdom.dom;
+    // let oldDOM = oldVdom.dom;
+    let oldDOM = findDOM(oldVdom);
     let newDOM = createDOM(newVdom);
     parentDOM.replaceChild(newDOM, oldDOM);
+}
+/**
+ * 从虚拟DOM返回真实DOM
+ * @param {*} vdom 
+ */
+export function findDOM(vdom) {
+    if (!vdom) return null;
+    if (vdom.dom) { //如果它身上有dom属性，那说明这个vdom是一个原生组件的虚拟dom
+        return vdom.dom;
+    } else {
+        return findDOM(vdom.oldRenderVdom);
+    }
 }
 const ReactDOM = {
     render
