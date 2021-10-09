@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React from './react';
+import ReactDOM from './react-dom';
 
 /**
  * 组件的生命周期
@@ -34,35 +34,9 @@ class Counter extends React.Component {
         return (
             <div>
                 <p>{this.state.number}</p>
-                {
-                    this.state.number === 4 ? null : <ChildCounter count={this.state.number} />
-                }
                 <button onClick={this.handleClick}>+</button>
             </div>
         )
-    }
-}
-//子组件
-class ChildCounter extends React.Component {
-    componentWillReceiveProps(nextProps) {
-        console.log('ChildCounter 4.componentWillReceiveProps');
-    }
-    componentWillMount() {
-        console.log('ChildCounter 1.componentWillMount');
-    }
-    componentDidMount() {
-        console.log('ChildCounter 3.componentDidMount');
-    }
-    shouldComponentUpdate(nextProps, nextState) {
-        console.log('ChildCounter 5.shouldComponentUpdate');
-        return nextProps.count % 3 === 0;
-    }
-    componentWillUnmount() {
-        console.log('ChildCounter 6.componentWillUnmount')
-    }
-    render() {
-        console.log('ChildCounter 2.render');
-        return <div>{this.props.count}</div>
     }
 }
 ReactDOM.render(<Counter />, document.getElementById('root'));
