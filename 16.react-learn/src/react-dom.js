@@ -189,7 +189,7 @@ function updateClassComponent(oldVdom, newVdom) {
 
     classInstance.updater.emitUpdate(newVdom.props);
 
-    newVdom.oldRenderVdom = oldVdom.oldRenderVdom; //不管更不更新，都需要将老的虚拟渲染DOM赋给新的虚拟DOM
+    newVdom.oldRenderVdom = classInstance.oldRenderVdom; //不管更不更新，都需要将老的虚拟渲染DOM赋给新的虚拟DOM
 }
 /**
  * 更新函数组件
