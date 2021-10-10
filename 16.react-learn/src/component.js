@@ -18,7 +18,9 @@ class Updater {
         this.pendingStates.push(partialState); //每次更新并非直接，而是加入到等待更新队列中
         this.emitUpdate(); //触发更新函数
     }
-    emitUpdate() {
+    emitUpdate(nextProps) {
+        this.nextProps = nextProps;
+
         if (updateQueue.isBatchingUpdate) { //当前处于批量更新模式
             updateQueue.updaters.push(this);
         } else {
@@ -27,7 +29,8 @@ class Updater {
     }
     updateComponent() {
         let { classInstance, pendingStates, nextProps } = this;
-        if (pendingStates.length > 0) {
+        //如果属性更新、或者说状态更新了都会进行更新
+        if (nextProps || pendingStates.length > 0) {
             shouldUpdate(classInstance, nextProps, this.getState());
         }
     }
@@ -58,6 +61,9 @@ function shouldUpdate(classInstance, nextProps, nextState) {
     }
     if (willUpdate && classInstance.componentWillUpdate) {
         classInstance.componentWillUpdate();
+    }
+    if (nextProps) {
+        classInstance.props = nextProps;
     }
     classInstance.state = nextState; //不管要不要更新，赋值都会执行
     if (willUpdate) {
