@@ -1,4 +1,4 @@
-import { REACT_FORWARD_REF, REACT_TEXT } from "./constants";
+import { MOVE, PLACEMENT, REACT_FORWARD_REF, REACT_TEXT } from "./constants";
 import { addEvent } from "./event";
 
 /**
@@ -169,11 +169,75 @@ function updateElement(oldVdom, newVdom) {
 function updateChildren(parentDOM, oldVChildren, newVChildren) {
     oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren];
     newVChildren = Array.isArray(newVChildren) ? newVChildren : [newVChildren];
-    let maxLength = Math.max(oldVChildren.length, newVChildren.length);
-    for (let i = 0; i < maxLength; i++) {
-        let nextVdom = oldVChildren.find((item, index) => index > i && item && findDOM(item));
-        compareTwoVdom(parentDOM, oldVChildren[i], newVChildren[i], nextVdom && findDOM(nextVdom));
-    }
+    // let maxLength = Math.max(oldVChildren.length, newVChildren.length);
+    // for (let i = 0; i < maxLength; i++) {
+    //     let nextVdom = oldVChildren.find((item, index) => index > i && item && findDOM(item));
+    //     compareTwoVdom(parentDOM, oldVChildren[i], newVChildren[i], nextVdom && findDOM(nextVdom));
+    // }
+
+    //1.构建老的子节点映射，key：虚拟DOM的key 值：虚拟DOM
+    let keyedOldMap = {};
+    oldVChildren.forEach((oldVChild, index) => {
+        let oldKey = oldVChild.key ? oldVChild.key : index;
+        keyedOldMap[oldKey] = oldVChild;
+    });
+    let patch = []; //表示我们要打的补丁，也就是我们要进行的操作
+    let lastPlacedIndex = 0;
+    //2.标记那些节点需要移动，那些节点是新插入的
+    newVChildren.forEach((newVChild, index) => {
+        newVChild.mountIndex = index;
+        let newKey = newVChild.key ? newVChild.key : index;
+        let oldVChild = keyedOldMap[newKey];
+        if (oldVChild) { //新节点存在于老节点中，表示可以复用老节点
+            //先更新
+            updateElement(oldVChild, newVChild);
+            if (oldVChild.mountIndex < lastPlacedIndex) {
+                patch.push({
+                    type: MOVE,
+                    oldVChild, //把oldVChild移动到当前的索引出
+                    newVChild,
+                    mountIndex: index
+                });
+            }
+            delete keyedOldMap[newKey]; //从Map中删除已经复用好的节点
+            lastPlacedIndex = Math.max(oldVChild.mountIndex, lastPlacedIndex);
+        } else {
+            patch.push({
+                type: PLACEMENT,
+                newVChild,
+                mountIndex: index
+            })
+        }
+    });
+    //3.获取需要移动的节点
+    let moveChildren = patch.filter(action => action.type === MOVE).map(action => action.oldVChild);
+    //4.先删除移动的和需要删除的节点
+    //遍历完成后再map留下的节点就是没有被复用到的元素，需要全部删除
+    Object.keys(keyedOldMap).concat(moveChildren).forEach(oldVChild => {
+        let currentDOM = findDOM(oldVChild);
+        parentDOM.removeChild(currentDOM);
+    });
+    patch.forEach(action => {
+        let { type, oldVChild, newVChild, mountIndex } = action;
+        let childNodes = parentDOM.childNodes; //真实DOM节点集合
+        if (type === PLACEMENT) {
+            let newDOM = createDOM(newVChild); //根据新的虚拟DOM创建新的真实DOM
+            let childNode = childNodes[mountIndex]; //获取原来老的DOM中的对应的索引出的真实DOM；可能有也可能没有
+            if (childNode) {
+                parentDOM.insertBefore(newDOM, childNode);
+            } else {
+                parentDOM.appendChild(newDOM);
+            }
+        } else if (type === MOVE) {
+            let oldDOM = findDOM(oldVChild);
+            let childNode = childNodes[mountIndex];
+            if (childNode) {
+                parentDOM.insertBefore(oldDOM, childNode);
+            } else {
+                parentDOM.appendChild(oldDOM);
+            }
+        }
+    })
 }
 /**
  * 更新类组件
