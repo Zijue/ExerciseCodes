@@ -86,13 +86,22 @@ export class Component {
         let oldRenderVdom = this.oldRenderVdom; //获取老的虚拟渲染DOM
         // let oldDOM = oldRenderVdom.dom; //获取老的真实DOM
         let oldDOM = findDOM(oldRenderVdom);
+        //新的生命周期函数
+        if (this.constructor.getDerivedStateFromProps) {
+            let newState = this.constructor.getDerivedStateFromProps(this.props, this.state);
+            if (newState) {
+                this.state = { ...this.state, ...newState }; //采用合并的方式合并状态
+            }
+        }
         let newRenderVdom = this.render(); //再次调用render，返回新的虚拟dom
+        //新的生命周期函数
+        let snapshot = this.getSnapshotBeforeUpdate && this.getSnapshotBeforeUpdate();
         //oldDOM真实DOM元素，.parentNode属于原生dom-api
         compareTwoVdom(oldDOM.parentNode, oldRenderVdom, newRenderVdom);
         this.oldRenderVdom = newRenderVdom;
 
         if (this.componentDidUpdate) {
-            this.componentDidUpdate(this.props, this.state);
+            this.componentDidUpdate(this.props, this.state, snapshot);
         }
     }
 }

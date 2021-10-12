@@ -83,7 +83,7 @@ function mountClassComponent(vdom) { //挂载类组件
     // return createDOM(renderVdom);
     let dom = createDOM(renderVdom);
     if (classInstance.componentDidMount) {
-        dom.componentDidMount = classInstance.componentDidMount;
+        dom.componentDidMount = classInstance.componentDidMount.bind(classInstance);
     }
     return dom;
 }
