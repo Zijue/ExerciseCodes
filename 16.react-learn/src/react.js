@@ -77,11 +77,20 @@ function createContext() {
     }
     return context;
 }
+function cloneElement(oldElement, props, children) {
+    if (arguments.length > 3) { //说明有多个儿子
+        props.children = Array.prototype.slice.call(arguments, 2).map(wrapToVdom);
+    } else if (arguments.length === 3) {
+        props.children = wrapToVdom(children); //字符串、数字、React元素
+    }
+    return { ...oldElement, props }
+}
 const React = {
     createElement,
     Component,
     createRef,
     forwardRef,
-    createContext
+    createContext,
+    cloneElement
 }
 export default React;
