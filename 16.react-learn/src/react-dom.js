@@ -1,4 +1,4 @@
-import { MOVE, PLACEMENT, REACT_FORWARD_REF, REACT_TEXT } from "./constants";
+import { MOVE, PLACEMENT, REACT_FORWARD_REF, REACT_TEXT, REACT_PROVIDER, REACT_CONTEXT } from "./constants";
 import { addEvent } from "./event";
 
 /**
@@ -27,7 +27,11 @@ function mount(vdom, container) {
 function createDOM(vdom) {
     let { type, props, ref } = vdom;
     let dom; //真实dom
-    if (type && type.$$typeof === REACT_FORWARD_REF) {
+    if (type && type.$$typeof === REACT_PROVIDER) {
+        return mountProviderComponent(vdom);
+    } else if (type && type.$$typeof === REACT_CONTEXT) {
+        return mountContextComponent(vdom);
+    } else if (type && type.$$typeof === REACT_FORWARD_REF) {
         return mountForwardComponent(vdom); //挂载ref转发组件
     } else if (type === REACT_TEXT) { //创建文本节点
         dom = document.createTextNode(props.content);
@@ -55,6 +59,24 @@ function createDOM(vdom) {
     if (ref) ref.current = dom;
     return dom;
 }
+function mountProviderComponent(vdom) {
+    let { type, props } = vdom; //type = {$$typeof: Symbol(react.provider), _context: context}
+    let context = type._context; //{ $$typeof: REACT_CONTEXT, _currentValue: undefined }
+    context._currentValue = props.value; //把属性中的value值赋给context._currentValue
+    let renderVdom = props.children; //Provider实际要渲染的是它的儿子
+    vdom.oldRenderVdom = renderVdom; //这一步是为了后面更新用
+    if (!renderVdom) return null;
+    return createDOM(renderVdom);
+}
+function mountContextComponent(vdom) {
+    let { type, props } = vdom; //type = {$$typeof: Symbol(react.context), _context: context}
+    let context = type._context;
+    //Consumer实际也是要渲染儿子，且儿子是个函数，参数为Provider中value值(赋给了context._currentValue)
+    let renderVdom = props.children(context._currentValue);
+    vdom.oldRenderVdom = renderVdom;
+    if (!renderVdom) return null;
+    return createDOM(renderVdom);
+}
 function mountForwardComponent(vdom) {
     let { type, props, ref } = vdom;
     let renderVdom = type.render(props, ref);
@@ -69,6 +91,11 @@ function mountFunctionComponent(vdom) { //挂载函数组件
 function mountClassComponent(vdom) { //挂载类组件
     let { type: ClassComponent, props, ref } = vdom;
     let classInstance = new ClassComponent(props); //创建类组件的实例
+
+    //把Provider中的value值赋给classInstance（类组件实例）的context属性
+    if (ClassComponent.contextType) {
+        classInstance.context = ClassComponent.contextType._currentValue;
+    }
 
     vdom.classInstance = classInstance; //在虚拟DOM上挂载一个属性，指向类组件的实例，用于类组件的更新时使用
 
@@ -142,8 +169,11 @@ export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
     }
 }
 function updateElement(oldVdom, newVdom) {
-    //如果新老节点都是文本节点，复用老的文本节点
-    if (oldVdom.type === REACT_TEXT) {
+    if (oldVdom.type.$$typeof === REACT_PROVIDER) {
+        updateProviderComponent(oldVdom, newVdom);
+    } else if (oldVdom.type.$$typeof === REACT_CONTEXT) {
+        updateContextComponent(oldVdom, newVdom);
+    } else if (oldVdom.type === REACT_TEXT) { //如果新老节点都是文本节点，复用老的文本节点
         let currentDOM = newVdom.dom = findDOM(oldVdom);
         currentDOM.textContent = newVdom.props.content;
     } else if (typeof oldVdom.type === 'string') { //原生组件 div/h1等
@@ -159,6 +189,28 @@ function updateElement(oldVdom, newVdom) {
             updateFunctionComponent(oldVdom, newVdom);
         }
     }
+}
+function updateProviderComponent(oldVdom, newVdom) {
+    let oldDOM = findDOM(oldVdom); //老的真实DOM
+    let parentDOM = oldDOM.parentNode; //真实父DOM
+    let { type, props } = newVdom;
+    let context = type._context;
+    /**
+     * 这一步相当关键，使用新的value属性赋给context._currentValue，供后续使用
+     */
+    context._currentValue = props.value;
+    let renderVdom = props.children;
+    compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom);
+    newVdom.oldRenderVdom = renderVdom;
+}
+function updateContextComponent(oldVdom, newVdom) {
+    let oldDOM = findDOM(oldVdom); //老的真实DOM
+    let parentDOM = oldDOM.parentNode; //真实父DOM
+    let { type, props } = newVdom;
+    let context = type._context;
+    let renderVdom = props.children(context._currentValue);
+    compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom);
+    newVdom.oldRenderVdom = renderVdom;
 }
 /**
  * 更新子节点

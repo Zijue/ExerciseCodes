@@ -1,4 +1,4 @@
-import { REACT_ELEMENT, REACT_FORWARD_REF } from './constants';
+import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARD_REF, REACT_PROVIDER } from './constants';
 import { wrapToVdom } from './utils';
 import { Component } from './component';
 
@@ -55,10 +55,33 @@ function forwardRef(render) {
         render
     }
 }
+/** 就是一个对象，Provider与Consumer循环引用context
+let context  = {
+    $$typeof: Symbol(react.context),
+    Consumer: {$$typeof: Symbol(react.context), _context:context}
+    Provider: {$$typeof: Symbol(react.provider), _context:context},
+    _currentValue:{color:'red',changeColor}
+}
+context.Consumer._context=context;
+context.Provider._context=context;
+ */
+function createContext() {
+    let context = { $$typeof: REACT_CONTEXT, _currentValue: undefined }
+    context.Provider = {
+        $$typeof: REACT_PROVIDER,
+        _context: context
+    }
+    context.Consumer = {
+        $$typeof: REACT_CONTEXT,
+        _context: context
+    }
+    return context;
+}
 const React = {
     createElement,
     Component,
     createRef,
-    forwardRef
+    forwardRef,
+    createContext
 }
 export default React;

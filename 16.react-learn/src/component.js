@@ -86,6 +86,10 @@ export class Component {
         let oldRenderVdom = this.oldRenderVdom; //获取老的虚拟渲染DOM
         // let oldDOM = oldRenderVdom.dom; //获取老的真实DOM
         let oldDOM = findDOM(oldRenderVdom);
+        //类组件使用了static contextType属性，就需要在更新前更新此值
+        if (this.constructor.contextType) {
+            this.context = this.constructor.contextType._currentValue;
+        }
         //新的生命周期函数
         if (this.constructor.getDerivedStateFromProps) {
             let newState = this.constructor.getDerivedStateFromProps(this.props, this.state);
