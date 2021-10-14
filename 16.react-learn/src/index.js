@@ -1,35 +1,33 @@
 import React from './react';
 import ReactDOM from './react-dom';
 
-//高阶组件HOC的方式
-function withMouseTracker(OldComponent) {
-    return class extends React.Component {
-        constructor(props) {
-            super(props);
-            this.state = { x: 0, y: 0 };
-        }
-        handleMouseMove = (event) => {
-            this.setState({
-                x: event.clientX,
-                y: event.clientY
-            });
-        }
-        render() {
-            return (
-                <div onMouseMove={this.handleMouseMove}>
-                    <OldComponent {...this.state} />
-                </div>
-            )
-        }
+/**
+ * PureComponent 纯组件，核心是内部重写了shouldComponentUpdate方法，
+ * 每次更新先判断属性变了没有，如果没变就不更新，如果变了才更新
+ */
+class ClassCounter extends React.PureComponent {
+    render() {
+        console.log('ClassCounter.render');
+        return (
+            <div>ClassCounter: {this.props.count}</div>
+        )
     }
 }
-function Show(props) {
-    return (
-        <div>
-            <h1>请移动鼠标</h1>
-            <p>当前的鼠标位置是{props.x} {props.y}</p>
-        </div>
-    )
+class App extends React.Component {
+    state = { number: 0 }
+    amountRef = React.createRef();
+    handleClick = () => {
+        let nextNumber = this.state.number + parseInt(this.amountRef.current.value);
+        this.setState({ number: nextNumber });
+    }
+    render() {
+        return (
+            <div>
+                <ClassCounter count={this.state.number} />
+                <input ref={this.amountRef} defaultValue={0} />
+                <button onClick={this.handleClick}>+</button>
+            </div>
+        )
+    }
 }
-const WithShow = withMouseTracker(Show);
-ReactDOM.render(<WithShow />, document.getElementById('root'));
+ReactDOM.render(<App />, document.getElementById('root'));

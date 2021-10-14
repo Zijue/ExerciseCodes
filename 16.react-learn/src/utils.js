@@ -8,3 +8,25 @@ export function wrapToVdom(element) {
         || typeof element === 'number'
         ? { $$typeof: REACT_ELEMENT, type: REACT_TEXT, props: { content: element } } : element;
 }
+export function shallowEqual(obj1, obj2) {
+    //如果地址一样，就认为是相等的
+    if (obj1 === obj2) {
+        return true;
+    }
+    //只要任何一个不是对象或者任意一个是null，那就不相等
+    if (typeof obj1 !== 'object' || obj1 == null || typeof obj2 !== 'object' || obj2 == null) {
+        return false;
+    }
+    let keys1 = Object.keys(obj1);
+    let keys2 = Object.keys(obj2);
+    //如果属性的数量不相等
+    if (keys1.length !== keys2.length) {
+        return false;
+    }
+    for (let key of keys1) {
+        if (!obj2.hasOwnProperty(key) || obj1[key] !== obj2[key]) {
+            return false;
+        }
+    }
+    return true;
+}

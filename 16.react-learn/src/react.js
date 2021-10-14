@@ -1,5 +1,5 @@
 import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARD_REF, REACT_PROVIDER } from './constants';
-import { wrapToVdom } from './utils';
+import { shallowEqual, wrapToVdom } from './utils';
 import { Component } from './component';
 
 function createElement(type, props, children) {
@@ -85,12 +85,20 @@ function cloneElement(oldElement, props, children) {
     }
     return { ...oldElement, props }
 }
+class PureComponent extends Component {
+    //https://github1s.com/facebook/react/blob/HEAD/packages/react-reconciler/src/ReactFiberClassComponent.new.js#L308-L314
+    shouldComponentUpdate(nextProps, nextState) {
+        //如果属性不相等或者状态不相等就返回true
+        return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
+    }
+}
 const React = {
     createElement,
     Component,
     createRef,
     forwardRef,
     createContext,
-    cloneElement
+    cloneElement,
+    PureComponent
 }
 export default React;
