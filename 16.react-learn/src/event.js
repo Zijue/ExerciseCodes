@@ -54,7 +54,11 @@ function dispatchEvent(event) {
  */
 function createSyntheticEvent(nativeEvent) {
     //将原生事件上的属性拷贝到合成事件对象上
-    let syntheticEvent = Object.assign({}, nativeEvent);
+    // let syntheticEvent = Object.assign({}, nativeEvent); //不能使用这样的方式，没有成功
+    let syntheticEvent = {};
+    for (let key in nativeEvent) {
+        syntheticEvent[key] = nativeEvent[key];
+    }
     syntheticEvent.nativeEvent = nativeEvent; //将原生事件挂到合成事件上
     syntheticEvent.isDefaultPrevented = false;
     syntheticEvent.isPropagationStopped = false;

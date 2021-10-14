@@ -219,8 +219,9 @@ function updateContextComponent(oldVdom, newVdom) {
  * @param {*} newVChildren 新的虚拟子节点
  */
 function updateChildren(parentDOM, oldVChildren, newVChildren) {
-    oldVChildren = Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren];
-    newVChildren = Array.isArray(newVChildren) ? newVChildren : [newVChildren];
+    //过滤其中空的子节点，undefined
+    oldVChildren = (Array.isArray(oldVChildren) ? oldVChildren : [oldVChildren]).filter(item => item);
+    newVChildren = (Array.isArray(newVChildren) ? newVChildren : [newVChildren]).filter(item => item);
     // let maxLength = Math.max(oldVChildren.length, newVChildren.length);
     // for (let i = 0; i < maxLength; i++) {
     //     let nextVdom = oldVChildren.find((item, index) => index > i && item && findDOM(item));
@@ -265,7 +266,7 @@ function updateChildren(parentDOM, oldVChildren, newVChildren) {
     let moveChildren = patch.filter(action => action.type === MOVE).map(action => action.oldVChild);
     //4.先删除移动的和需要删除的节点
     //遍历完成后再map留下的节点就是没有被复用到的元素，需要全部删除
-    Object.keys(keyedOldMap).concat(moveChildren).forEach(oldVChild => {
+    Object.values(keyedOldMap).concat(moveChildren).forEach(oldVChild => {
         let currentDOM = findDOM(oldVChild);
         parentDOM.removeChild(currentDOM);
     });
