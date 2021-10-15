@@ -9,8 +9,8 @@ export function useState(initialState) {
     hookStates[hookIndex] = hookStates[hookIndex] || initialState;
     let currentIndex = hookIndex;
     function setState(newState) {
-        hookStates[currentIndex] = newState;
-        scheduleUpdate();
+        hookStates[currentIndex] = newState; //currentIndex指向hookIndex赋值的时候的那个值，利用闭包的特性实现
+        scheduleUpdate(); //状态变化后，要执行调度更新任务
     }
     return [hookStates[hookIndex++], setState];
 }
