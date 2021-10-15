@@ -1,6 +1,20 @@
 import { MOVE, PLACEMENT, REACT_FORWARD_REF, REACT_TEXT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO } from "./constants";
 import { addEvent } from "./event";
 
+//Hooks
+let hookStates = []; //用来记录状态
+let hookIndex = 0; //索引当前hook的索引
+let scheduleUpdate; //调度更新的方法
+export function useState(initialState) {
+    hookStates[hookIndex] = hookStates[hookIndex] || initialState;
+    let currentIndex = hookIndex;
+    function setState(newState) {
+        hookStates[currentIndex] = newState;
+        scheduleUpdate();
+    }
+    return [hookStates[hookIndex++], setState];
+}
+
 /**
  * 将虚拟dom渲染挂载到指定的真实dom容器上
  * @param {*} vdom 虚拟dom，即React元素
@@ -8,6 +22,10 @@ import { addEvent } from "./event";
  */
 function render(vdom, container) {
     mount(vdom, container); //挂载方法
+    scheduleUpdate = () => {
+        hookIndex = 0;
+        compareTwoVdom(container, vdom, vdom); //每次更新都要从根节点开始进行DOM-DIFF
+    }
 }
 function mount(vdom, container) {
     //把虚拟DOM变成真实DOM

@@ -1,6 +1,7 @@
 import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARD_REF, REACT_MEMO, REACT_PROVIDER } from './constants';
 import { shallowEqual, wrapToVdom } from './utils';
 import { Component } from './component';
+import { useState } from './react-dom';
 
 function createElement(type, props, children) {
     let ref, key;
@@ -114,6 +115,7 @@ const React = {
     createContext,
     cloneElement,
     PureComponent,
-    memo
+    memo,
+    useState
 }
 export default React;
