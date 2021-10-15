@@ -1,4 +1,4 @@
-import { MOVE, PLACEMENT, REACT_FORWARD_REF, REACT_TEXT, REACT_PROVIDER, REACT_CONTEXT } from "./constants";
+import { MOVE, PLACEMENT, REACT_FORWARD_REF, REACT_TEXT, REACT_PROVIDER, REACT_CONTEXT, REACT_MEMO } from "./constants";
 import { addEvent } from "./event";
 
 /**
@@ -11,11 +11,11 @@ function render(vdom, container) {
 }
 function mount(vdom, container) {
     //把虚拟DOM变成真实DOM
-    let newDOM = createDOM(vdom);
+    let newDOM = createDOM(vdom); //有可能会返回null，需要做处理
     //把真实DOM追加到容器上
-    container.appendChild(newDOM);
+    if (newDOM) container.appendChild(newDOM);
 
-    if (newDOM.componentDidMount) {
+    if (newDOM && newDOM.componentDidMount) {
         newDOM.componentDidMount();
     }
 }
@@ -27,7 +27,9 @@ function mount(vdom, container) {
 function createDOM(vdom) {
     let { type, props, ref } = vdom;
     let dom; //真实dom
-    if (type && type.$$typeof === REACT_PROVIDER) {
+    if (type && type.$$typeof === REACT_MEMO) {
+        return mountMemoComponent(vdom);
+    } else if (type && type.$$typeof === REACT_PROVIDER) {
         return mountProviderComponent(vdom);
     } else if (type && type.$$typeof === REACT_CONTEXT) {
         return mountContextComponent(vdom);
@@ -59,6 +61,15 @@ function createDOM(vdom) {
     if (ref) ref.current = dom;
     return dom;
 }
+function mountMemoComponent(vdom) {
+    let { type, props } = vdom; //type={$$typeof: REACT_MEMO, compareFn, type:FunctionCounter}
+    let renderVdom = type.type(props);
+    //vdom.prevProps = props;这一步非常关键
+    vdom.prevProps = props; //记录一下老的属性对象，方便后续更新的时候进行对比
+    vdom.oldRenderVdom = renderVdom;
+    if (!renderVdom) return null; //有可能renderVdom是没有返回值的，如portal
+    return createDOM(renderVdom);
+}
 function mountProviderComponent(vdom) {
     let { type, props } = vdom; //type = {$$typeof: Symbol(react.provider), _context: context}
     let context = type._context; //{ $$typeof: REACT_CONTEXT, _currentValue: undefined }
@@ -80,12 +91,14 @@ function mountContextComponent(vdom) {
 function mountForwardComponent(vdom) {
     let { type, props, ref } = vdom;
     let renderVdom = type.render(props, ref);
+    if (!renderVdom) return null; //有可能renderVdom是没有返回值的，如portal
     return createDOM(renderVdom);
 }
 function mountFunctionComponent(vdom) { //挂载函数组件
     let { type: functionComponent, props } = vdom;
     let renderVdom = functionComponent(props); //执行函数组件的函数，获取需要渲染的虚拟dom返回值
     vdom.oldRenderVdom = renderVdom; //记录老的渲染虚拟dom，供后续diff用
+    if (!renderVdom) return null; //有可能renderVdom是没有返回值的，如portal
     return createDOM(renderVdom);
 }
 function mountClassComponent(vdom) { //挂载类组件
@@ -107,6 +120,7 @@ function mountClassComponent(vdom) { //挂载类组件
 
     let renderVdom = classInstance.render(); //调动实例的render方法
     vdom.oldRenderVdom = classInstance.oldRenderVdom = renderVdom; //将类组件实例与老的虚拟DOM关联
+    if (!renderVdom) return null; //有可能renderVdom是没有返回值的，如portal
     // return createDOM(renderVdom);
     let dom = createDOM(renderVdom);
     if (classInstance.componentDidMount) {
@@ -169,7 +183,9 @@ export function compareTwoVdom(parentDOM, oldVdom, newVdom, nextDOM) {
     }
 }
 function updateElement(oldVdom, newVdom) {
-    if (oldVdom.type.$$typeof === REACT_PROVIDER) {
+    if (oldVdom.type.$$typeof === REACT_MEMO) {
+        updateMemoComponent(oldVdom, newVdom);
+    } else if (oldVdom.type.$$typeof === REACT_PROVIDER) {
         updateProviderComponent(oldVdom, newVdom);
     } else if (oldVdom.type.$$typeof === REACT_CONTEXT) {
         updateContextComponent(oldVdom, newVdom);
@@ -188,6 +204,22 @@ function updateElement(oldVdom, newVdom) {
         } else { //函数组件
             updateFunctionComponent(oldVdom, newVdom);
         }
+    }
+}
+function updateMemoComponent(oldVdom, newVdom) {
+    let { type, prevProps } = oldVdom;
+    //新老属性对比，不相等则更新
+    if (!type.compareFn(prevProps, newVdom.props)) { //更新
+        let oldDOM = findDOM(oldVdom);
+        let parentDOM = oldDOM.parentNode;
+        let { type, props } = newVdom;
+        let renderVdom = type.type(props);
+        compareTwoVdom(parentDOM, oldVdom.oldRenderVdom, renderVdom);
+        newVdom.prevProps = props;
+        newVdom.oldRenderVdom = renderVdom;
+    } else { //跳过更新，直接赋值
+        newVdom.prevProps = prevProps;
+        newVdom.oldRenderVdom = oldVdom.oldRenderVdom;
     }
 }
 function updateProviderComponent(oldVdom, newVdom) {
@@ -373,6 +405,7 @@ export function findDOM(vdom) {
     }
 }
 const ReactDOM = {
-    render
+    render,
+    createPortal: render
 }
 export default ReactDOM;

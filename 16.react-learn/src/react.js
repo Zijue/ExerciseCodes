@@ -1,4 +1,4 @@
-import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARD_REF, REACT_PROVIDER } from './constants';
+import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARD_REF, REACT_MEMO, REACT_PROVIDER } from './constants';
 import { shallowEqual, wrapToVdom } from './utils';
 import { Component } from './component';
 
@@ -92,6 +92,20 @@ class PureComponent extends Component {
         return !shallowEqual(this.props, nextProps) || !shallowEqual(this.state, nextState);
     }
 }
+/** React.memo返回一个对象
+{
+    $$typeof: Symbol(react.memo)
+    compare: null
+    type: FunctionCounter 传入的函数组件
+}
+ */
+function memo(type, compareFn = shallowEqual) {
+    return {
+        $$typeof: REACT_MEMO,
+        compareFn, //用来比较新旧属性差异的函数
+        type
+    }
+}
 const React = {
     createElement,
     Component,
@@ -99,6 +113,7 @@ const React = {
     forwardRef,
     createContext,
     cloneElement,
-    PureComponent
+    PureComponent,
+    memo
 }
 export default React;
