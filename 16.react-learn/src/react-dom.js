@@ -6,15 +6,121 @@ let hookStates = []; //用来记录状态
 let hookIndex = 0; //索引当前hook的索引
 let scheduleUpdate; //调度更新的方法
 export function useState(initialState) {
+    // hookStates[hookIndex] = hookStates[hookIndex] || initialState;
+    // let currentIndex = hookIndex;
+    // function setState(newState) {
+    //     hookStates[currentIndex] = newState; //currentIndex指向hookIndex赋值的时候的那个值，利用闭包的特性实现
+    //     scheduleUpdate(); //状态变化后，要执行调度更新任务
+    // }
+    // return [hookStates[hookIndex++], setState];
+
+    return useReducer(null, initialState);
+}
+/**
+ * useState的替代品
+ * @param {*} reducer 
+ * @param {*} initialState 
+ */
+export function useReducer(reducer, initialState) {
     hookStates[hookIndex] = hookStates[hookIndex] || initialState;
     let currentIndex = hookIndex;
-    function setState(newState) {
-        hookStates[currentIndex] = newState; //currentIndex指向hookIndex赋值的时候的那个值，利用闭包的特性实现
-        scheduleUpdate(); //状态变化后，要执行调度更新任务
+    function dispatch(action) {
+        if (typeof action === 'function') {
+            action = action(hookStates[currentIndex]);
+        }
+        hookStates[currentIndex] = reducer ? reducer(hookStates[currentIndex], action) : action;
+        scheduleUpdate();
     }
-    return [hookStates[hookIndex++], setState];
+    return [hookStates[hookIndex++], dispatch];
 }
-
+/**
+ * @param {*} factory 工厂函数
+ * @param {*} deps 缓存依赖
+ */
+export function useMemo(factory, deps) {
+    //判断是否为初次渲染
+    if (hookStates[hookIndex]) { //有值，不是初次渲染
+        let [lastMemo, lastDeps] = hookStates[hookIndex]; //如果是更新的时候，也就是说不是初次渲染
+        //如果老的依赖数组和新的依赖数且完全一致，返回true；否则，返回false
+        let allTheSame = deps.every((item, index) => item === lastDeps[index]);
+        if (allTheSame) {
+            hookIndex++;
+            return lastMemo;
+        } else {
+            let newMemo = factory();
+            hookStates[hookIndex++] = [newMemo, deps];
+            return newMemo;
+        }
+    } else { //没值，说明是初次渲染
+        let newMemo = factory();
+        hookStates[hookIndex++] = [newMemo, deps];
+        return newMemo;
+    }
+}
+export function useCallback(callback, deps) {
+    //判断是否为初次渲染
+    if (hookStates[hookIndex]) { //有值，不是初次渲染
+        let [lastCallback, lastDeps] = hookStates[hookIndex]; //如果是更新的时候，也就是说不是初次渲染
+        //如果老的依赖数组和新的依赖数且完全一致，返回true；否则，返回false
+        let allTheSame = deps.every((item, index) => item === lastDeps[index]);
+        if (allTheSame) {
+            hookIndex++;
+            return lastCallback;
+        } else {
+            hookStates[hookIndex++] = [callback, deps];
+            return callback;
+        }
+    } else { //没值，说明是初次渲染
+        hookStates[hookIndex++] = [callback, deps];
+        return callback;
+    }
+}
+export function useEffect(callback, deps) {
+    let currentIndex = hookIndex;
+    if (hookStates[hookIndex]) { //判断一下是否是首次渲染
+        let [destroy, lastDeps] = hookStates[hookIndex];
+        let allTheSame = deps && deps.every((item, index) => item === lastDeps[index]);
+        if (allTheSame) {
+            hookIndex++;
+        } else {
+            //执行上一个销毁函数
+            destroy && destroy();
+            setTimeout(() => {
+                hookStates[currentIndex] = [callback(), deps]; //[effect的销毁函数，依赖数组]
+            }, 0);
+            hookIndex++;
+        }
+    } else { //说明是首次渲染
+        //因为useEffect需要延迟执行，所以说需要包装成一个宏任务，不会阻塞当前的页面渲染
+        setTimeout(() => {
+            hookStates[currentIndex] = [callback(), deps];
+        }, 0);
+        hookIndex++;
+    }
+}
+export function useLayoutEffect(callback, deps) {
+    let currentIndex = hookIndex;
+    if (hookStates[hookIndex]) { //判断一下是否是首次渲染
+        let [destroy, lastDeps] = hookStates[hookIndex];
+        let allTheSame = deps && deps.every((item, index) => item === lastDeps[index]);
+        if (allTheSame) {
+            hookIndex++;
+        } else {
+            //执行上一个销毁函数
+            destroy && destroy();
+            setTimeout(() => {
+                hookStates[currentIndex] = [callback(), deps]; //[effect的销毁函数，依赖数组]
+            }, 0);
+            hookIndex++;
+        }
+    } else { //说明是首次渲染
+        //因为useEffect需要延迟执行，所以说需要包装成一个宏任务，不会阻塞当前的页面渲染
+        queueMicrotask(() => { //较useEffect只是将setTimeout改成了queueMicrotask
+            hookStates[currentIndex] = [callback(), deps];
+        }, 0);
+        hookIndex++;
+    }
+}
 /**
  * 将虚拟dom渲染挂载到指定的真实dom容器上
  * @param {*} vdom 虚拟dom，即React元素

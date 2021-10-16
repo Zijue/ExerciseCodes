@@ -1,7 +1,7 @@
 import { REACT_CONTEXT, REACT_ELEMENT, REACT_FORWARD_REF, REACT_MEMO, REACT_PROVIDER } from './constants';
 import { shallowEqual, wrapToVdom } from './utils';
 import { Component } from './component';
-import { useState } from './react-dom';
+import { useState, useMemo, useCallback, useReducer, useEffect, useLayoutEffect } from './react-dom';
 
 function createElement(type, props, children) {
     let ref, key;
@@ -107,6 +107,15 @@ function memo(type, compareFn = shallowEqual) {
         type
     }
 }
+function useContext(context) {
+    return context._currentValue;
+}
+function useRef() {
+    return { current: null };
+}
+function useImperativeHandle(ref, factory) {
+    ref.current = factory();
+}
 const React = {
     createElement,
     Component,
@@ -116,6 +125,14 @@ const React = {
     cloneElement,
     PureComponent,
     memo,
-    useState
+    useState,
+    useMemo,
+    useCallback,
+    useReducer,
+    useContext,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useImperativeHandle
 }
 export default React;
