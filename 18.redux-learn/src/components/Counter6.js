@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { connect } from 'react-redux'
+import { connect } from '../react-redux'
 import actions from '../store/actionCreators/counter6';
 
 class Counter6 extends Component {
