@@ -11,6 +11,7 @@ function useSelector(selector) {
     //使用useLayoutEffect是为了只调用一次subscribe
     React.useLayoutEffect(() => {
         store.subscribe(() => {
+            //此处必须从新获取selectedState的值，不然就处于闭包
             let selectedState = selector(store.getState());
             if (!shallowEqual(selectedState, lastSelectedState.current)) {
                 forceUpdate(); //forceUpdate就是useReducer返回的dispatch，调度组件更新的
