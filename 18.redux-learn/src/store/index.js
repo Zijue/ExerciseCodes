@@ -1,7 +1,10 @@
-import { createStore } from '../redux';
+import { createStore, applyMiddleware } from '../redux';
 import combineReducer from './reducers';
+import logger from './redux-logger';
+import thunk from './redux-thunk';
+import promise from './redux-promise';
 
-const store = createStore(combineReducer);
+// const store = createStore(combineReducer);
 //实现日志的功能，通过AOP的方式
 // let originDispatch = store.dispatch;
 // store.dispatch = function (action) {
@@ -17,4 +20,7 @@ const store = createStore(combineReducer);
 //     }, 1000);
 //     return action;
 // }
+
+//应用中间件 -- 中间件的级联
+const store = applyMiddleware(promise, thunk, logger)(createStore)(combineReducer);
 export default store;
