@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>browser</title>
+</head>
+
+<body>
+    <div id='root'></div>
+    <ul>
+        <li><a id="page1">page1</a></li>
+        <li><a id="page2">page2</a></li>
+    </ul>
+    <script>
+        //在window对象上自定义一个onpopstate属性，浏览器并不识别
+        window.onpushstate = function (event) {
+            console.log('pushstate', event.type, event.state);
+            root.innerHTML = window.location.pathname;
+        }
+        var globalHistory = window.history;
+        //go back forward => 就会触发popstate事件
+        window.addEventListener('popstate', (event) => {
+            console.log('popstate', event.type, event.state); //event.state其实只是一个让你用来存放数据的属性
+            root.innerHTML = window.location.pathname;
+        });
+        (function (globalHistory) { //IIFE
+            let oldPushState = globalHistory.pushState;
+            globalHistory.pushState = function (state, title, pathname) {
+                let result = oldPushState.apply(globalHistory, arguments); //调用老的pushState
+                if (typeof window.onpushstate === 'function') {
+                    window.onpushstate({ type: 'pushstate', state }); //调用自定义的pushstate事件
+                }
+                return result;
+            }
+        })(globalHistory);
+        // setTimeout(() => {
+        //     //第一个参数：用于存储该url对应的状态对象，该对象可在onpopstate事件中获取，也可在history对象中获取
+        //     //第二个参数：表示标题，目前浏览器并未实现，传null
+        //     //第三个参数：设定的url地址
+        //     globalHistory.pushState({ page: 1 }, null, '/page1'); //pushState并不会触发popstate事件
+        //     //如果我们想调用pushState时触发事件，就需要自己polyfill实现
+        // }, 1000);
+        // setTimeout(() => {
+        //     globalHistory.pushState({ page: 2 }, null, '/page2');
+        // }, 2000);
+        // setTimeout(() => {
+        //     globalHistory.pushState({ page: 3 }, null, '/page3');
+        // }, 3000);
+        // setTimeout(() => {
+        //     globalHistory.back();
+        // }, 4000);
+        // setTimeout(() => {
+        //     globalHistory.pushState({ page: 4 }, null, '/page4');
+        // }, 5000);
+        // setTimeout(() => {
+        //     globalHistory.go(1); // go(1) 等价于 forward；go(-1) 等价于 back
+        // }, 6000);
+
+        //可以通过state对象携带参数
+        document.getElementById('page1').addEventListener('click', (event) => {
+            globalHistory.pushState({ page: 2, params: '携带的参数' }, null, '/page2');
+        })
+    </script>
+</body>
+
+</html>
