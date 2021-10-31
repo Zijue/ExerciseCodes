@@ -6,6 +6,7 @@ export default class Profile extends Component {
         return (
             <div>
                 <p>Profile</p>
+                <button onClick={() => this.props.history.goBack()}>返回</button>
             </div>
         )
     }

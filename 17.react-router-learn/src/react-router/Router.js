@@ -8,16 +8,21 @@ class Router extends React.Component {
             location: props.history.location
         }
         //当监听到路由发生变化后会执行回调
-        props.history.listen((location) => {
-            // console.log(location);
+        this.unlisten = props.history.listen((location) => {
+            //listener初次渲染的时候不会执行，只有当history发生改变时，才会执行
+            console.log('listener', location);
             this.setState({ location });
         })
+    }
+    componentWillUnmount() {
+        this.unlisten(); //组件将要销毁的时候取消监听
     }
     render() {
         let value = {
             history: this.props.history, //history外部属性传入
             location: this.state.location
         }
+        // console.log(value); //打印查看history的值
         return (
             <RouterContext.Provider value={value}>
                 {this.props.children}
