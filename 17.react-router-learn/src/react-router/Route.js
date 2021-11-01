@@ -5,6 +5,7 @@ import matchPath from './matchPath';
 export default class Route extends Component {
     static contextType = RouterContext;
     render() {
+        console.log('Route', this.props.path);
         const { history, location } = this.context;
         const {/* path, */ component: RouteComponent } = this.props;
         // const match = location.pathname === path;
