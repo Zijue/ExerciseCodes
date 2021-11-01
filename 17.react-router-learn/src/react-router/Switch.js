@@ -16,6 +16,7 @@ export default class Switch extends Component {
                 match = matchPath(location.pathname, route.props);
             }
         });
+        //在返回的克隆Route元素中给予computedMatch属性，后续Route中可以通过这个属性判断，从而减少判断的次数
         return match ? React.cloneElement(element, { computedMatch: match }) : null;
     }
 }
