@@ -32,14 +32,34 @@ function createHashHistory() {
     function goForward() {
         go(1);
     }
+    function push(pathname, nextState) {
+        action = 'PUSH';
+        if (typeof pathname === 'object') {
+            state = pathname.state;
+            pathname = pathname.pathname;
+        } else {
+            state = nextState;
+        }
+        window.location.hash = pathname;
+    }
     const history = {
         action: "POP", //pushState PUSH; popState POP; replace REPLACE
         listen,
         go,
         goBack,
         goForward,
+        push,
         location: { pathname: window.location.pathname, state: window.location.state }
     };
+    /**
+     * 此history还有bug，当不加url访问时，跳转后返回，会出错
+     */
+    if (window.location.hash) {
+        action = 'PUSH';
+        hashChangeHandler();
+    } else {
+        window.location.hash = '/';
+    }
     return history;
 }
 export default createHashHistory;
