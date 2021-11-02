@@ -6,9 +6,11 @@ import User from './components/User';
 import Profile from './components/Profile';
 import Login from './components/Login';
 import Protected from './components/Protected';
+import NavHeader from './components/NavHeader';
 // exact 表示精确匹配，只有url为"/"时才匹配
 ReactDOM.render(
   <Router>
+    <NavHeader title="导航头" />
     <ul>
       <li><NavLink
         className="strong" exact={true}
