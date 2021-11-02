@@ -1,9 +1,11 @@
-function createHashHistory() {
+function createHashHistory(props) {
     let historyStack = [];  //类似于history栈
     let current = -1;       //代表当前的栈顶指针
     let action = 'POP';     //代表当前的动作
     let state;              //代表当前的状态
     let listeners = [];     //监听函数组成的数组
+    let message = null;
+    let confirm = props.getUserConfirmation ? props.getUserConfirmation : window.confirm;
     function listen(listener) {
         listeners.push(listener);
         //监听方法会返回一个取消此监听函数的方法
@@ -40,7 +42,16 @@ function createHashHistory() {
         } else {
             state = nextState;
         }
+        if (message) {
+            let showMessage = message({ pathname });
+            let allow = confirm(showMessage);
+            if (!allow) return;
+        }
         window.location.hash = pathname;
+    }
+    function block(newMessageFn) {
+        message = newMessageFn;
+        return () => message = null;
     }
     const history = {
         action: "POP", //pushState PUSH; popState POP; replace REPLACE
@@ -49,7 +60,8 @@ function createHashHistory() {
         goBack,
         goForward,
         push,
-        location: { pathname: window.location.pathname, state: window.location.state }
+        location: { pathname: window.location.pathname, state: window.location.state },
+        block
     };
     /**
      * 此history还有bug，当不加url访问时，跳转后返回，会出错

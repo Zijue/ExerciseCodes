@@ -3,7 +3,7 @@ import { Router } from "../react-router";
 import { createHashHistory } from "../history";
 
 export default class HashRouter extends Component {
-    history = createHashHistory();
+    history = createHashHistory(this.props);
     render() {
         return (
             <Router history={this.history}>

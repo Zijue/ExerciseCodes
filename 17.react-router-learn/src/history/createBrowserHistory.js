@@ -1,7 +1,9 @@
-function createBrowserHistory() {
+function createBrowserHistory(props) {
     const globalHistory = window.history;
     let state;
     let listeners = [];
+    let message = null;
+    let confirm = props.getUserConfirmation ? props.getUserConfirmation : window.confirm;
     /**
      * 添加一个路由条目，并移动指针指向栈顶
      * @param {*} pathname 路径名
@@ -20,6 +22,11 @@ function createBrowserHistory() {
             pathname = pathname.pathname
         } else {
             state = nextState
+        }
+        if (message) {
+            let showMessage = message({ pathname });
+            let allow = confirm(showMessage);
+            if (!allow) return;
         }
         //调用原生的pushState方法跳转路径
         globalHistory.pushState(state, null, pathname);
@@ -50,6 +57,10 @@ function createBrowserHistory() {
     function goBack() {
         globalHistory.go(-1);
     }
+    function block(newMessageFn) {
+        message = newMessageFn;
+        return () => message = null;
+    }
     const history = {
         action: "POP", //pushState PUSH; popState POP; replace REPLACE
         push,
@@ -57,7 +68,8 @@ function createBrowserHistory() {
         go,
         goBack,
         goForward,
-        location: { pathname: window.location.pathname, state: window.location.state }
+        location: { pathname: window.location.pathname, state: window.location.state },
+        block
     };
     return history;
 }
