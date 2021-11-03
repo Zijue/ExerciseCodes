@@ -15,6 +15,7 @@ export default class Route extends Component {
         let element = null;
         if (match) {
             routeProps.match = match; //Route匹配上，就给routeProps添加一个match属性
+            this.context.params = match.params;
             if (RouteComponent) {
                 element = <RouteComponent {...routeProps} />
             } else if (render) {
