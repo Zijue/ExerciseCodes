@@ -1,5 +1,5 @@
 /* eslint-disable require-yield */
-import { put, fork, takeEvery } from '../redux-saga/effects';
+import { put, fork, takeEvery, call, cps } from '../redux-saga/effects';
 import * as actionTypes from './action-types';
 
 function delay(ms) {
@@ -7,16 +7,24 @@ function delay(ms) {
         setTimeout(resolve, ms);
     })
 }
+function delay2(ms, callback) {
+    setTimeout(() => {
+        callback(null, ms);
+    }, ms);
+}
 function* add() {
     // console.log('add 1');
-    yield delay(1000);
+    // yield delay(1000);
+    // yield call(delay, 1000);
+    let data = yield cps(delay2, 1000);
+    console.log('data', data);
     // console.log('add 2');
     yield put({ type: actionTypes.ADD });
 }
 function* rootSaga() {
     // yield fork(add);
     // console.log('rootSaga fork');
-    
+
     //监听每一次的ASYNC_ADD动作派发，执行对应的saga
     yield takeEvery(actionTypes.ASYNC_ADD, add);
 }

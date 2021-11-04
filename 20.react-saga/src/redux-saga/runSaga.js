@@ -4,8 +4,14 @@ function runSaga(env, saga) {
     let { channel, dispatch } = env;
     //saga可能是一个生成器函数，执行它得到迭代器；也可能就是一个迭代器，就直接使用此迭代器
     let it = typeof saga === 'function' ? saga() : saga;
-    function next() {
-        let { value: effect, done } = it.next();
+    function next(value, isError) {
+        let result;
+        if (isError) {
+            result = it.throw(value);
+        } else {
+            result = it.next(value);
+        }
+        let { value: effect, done } = result;
         if (!done) {
             if (typeof effect[Symbol.iterator] === 'function') {
                 runSaga(env, effect); //如果发现产出的是一个迭代器，那就会运行这个迭代器
@@ -29,6 +35,18 @@ function runSaga(env, saga) {
                     case effectTypes.FORK:
                         runSaga(env, effect.saga);
                         next(); //当前的saga可以继续向下执行
+                        break;
+                    case effectTypes.CALL:
+                        effect.fn(...effect.args).then(next);
+                        break;
+                    case effectTypes.CPS:
+                        effect.fn(...effect.args, (error, data) => {
+                            if (error) {
+                                next(error, true);
+                            } else {
+                                next(data);
+                            }
+                        })
                         break;
                     default:
                         break;
