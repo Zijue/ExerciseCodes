@@ -26,6 +26,10 @@ function runSaga(env, saga) {
                         //然后当前的saga可以继续向下执行
                         next();
                         break;
+                    case effectTypes.FORK:
+                        runSaga(env, effect.saga);
+                        next(); //当前的saga可以继续向下执行
+                        break;
                     default:
                         break;
                 }
