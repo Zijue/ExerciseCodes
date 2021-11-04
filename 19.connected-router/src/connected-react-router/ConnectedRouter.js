@@ -12,7 +12,7 @@ export default class ConnectedRouter extends Component {
         super(props);
         this.unlisten = this.props.history.listen((location, action) => {
             //Provider._currentValue={store} 上下文中传递了一个store属性
-            context.store.dispatch(onLocationChange(location, action));
+            context.store.dispatch(onLocationChange(location, action)); //当地址栏路径变化后，执行派发
         });
     }
     componentWillUnmount() {
