@@ -1,5 +1,5 @@
 /* eslint-disable require-yield */
-import { put, take } from 'redux-saga/effects';
+import { put, take } from '../redux-saga/effects';
 import * as actionTypes from './action-types';
 
 function delay(ms) {
