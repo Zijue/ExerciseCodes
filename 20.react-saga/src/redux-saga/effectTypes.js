@@ -6,3 +6,4 @@ export const FORK = 'FORK'; //用来产出一个新的任务
 export const CALL = 'CALL';
 export const CPS = 'CPS';
 export const ALL = 'ALL';
+export const CANCEL = 'CANCEL';

@@ -1,24 +1,26 @@
 /* eslint-disable require-yield */
-import { put, take, all } from '../redux-saga/effects';
+import { put, take, cancel, fork } from '../redux-saga/effects';
 import * as actionTypes from './action-types';
 
-function* add1() {
-    yield take(actionTypes.ASYNC_ADD);
-    yield put({ type: actionTypes.ADD });
-    console.log('add1 done');
-    return 'add1Result';
+function delay(ms) {
+    return new Promise((resolve, reject) => {
+        setTimeout(resolve, ms);
+    })
 }
-function* add2() {
-    for (let i = 0; i < 2; i++) {
-        yield take(actionTypes.ASYNC_ADD);
+function* add() {
+    while (1) {
+        yield delay(1000);
         yield put({ type: actionTypes.ADD });
     }
-    console.log('add2 done');
-    return 'add2Result';
+}
+function* addWatcher() {
+    const task = yield fork(add); //fork就是开启一个子saga
+    console.log(task);
+    yield take(actionTypes.STOP);
+    yield cancel(task);
 }
 function* rootSaga() {
-    let result = yield all([add1(), add2()]);
-    console.log('all done', result);
+    yield addWatcher();
 }
 export default rootSaga;
 /**

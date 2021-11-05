@@ -1,6 +1,8 @@
 import * as effectTypes from './effectTypes';
 
+const CANCEL_TASK = 'CANCEL_TASK';
 function runSaga(env, saga, callback) {
+    let task = { cancel: () => next(CANCEL_TASK) };
     let { channel, dispatch } = env;
     //saga可能是一个生成器函数，执行它得到迭代器；也可能就是一个迭代器，就直接使用此迭代器
     let it = typeof saga === 'function' ? saga() : saga;
@@ -8,6 +10,8 @@ function runSaga(env, saga, callback) {
         let result;
         if (isError) {
             result = it.throw(value);
+        } else if (value === CANCEL_TASK) {
+            result = it.return(); //直接让saga结束掉
         } else {
             result = it.next(value);
         }
@@ -33,8 +37,8 @@ function runSaga(env, saga, callback) {
                         next();
                         break;
                     case effectTypes.FORK:
-                        runSaga(env, effect.saga);
-                        next(); //当前的saga可以继续向下执行
+                        let forkTask = runSaga(env, effect.saga);
+                        next(forkTask); //当前的saga可以继续向下执行
                         break;
                     case effectTypes.CALL:
                         effect.fn(...effect.args).then(next);
@@ -61,6 +65,10 @@ function runSaga(env, saga, callback) {
                             })
                         });
                         break;
+                    case effectTypes.CANCEL:
+                        effect.task.cancel();
+                        next();
+                        break;
                     default:
                         break;
                 }
@@ -70,5 +78,6 @@ function runSaga(env, saga, callback) {
         }
     }
     next();
+    return task;
 }
 export default runSaga;

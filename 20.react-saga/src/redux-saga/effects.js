@@ -30,3 +30,6 @@ export function cps(fn, ...args) {
 export function all(iterators) {
     return { type: effectTypes.ALL, iterators };
 }
+export function cancel(task) {
+    return { type: effectTypes.CANCEL, task };
+}
