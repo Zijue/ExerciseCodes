@@ -5,3 +5,4 @@ export const FORK = 'FORK'; //用来产出一个新的任务
 //然后等待promise完成，继续向下执行saga
 export const CALL = 'CALL';
 export const CPS = 'CPS';
+export const ALL = 'ALL';

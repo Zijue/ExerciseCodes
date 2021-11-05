@@ -27,3 +27,6 @@ export function call(fn, ...args) {
 export function cps(fn, ...args) {
     return { type: effectTypes.CPS, fn, args };
 }
+export function all(iterators) {
+    return { type: effectTypes.ALL, iterators };
+}

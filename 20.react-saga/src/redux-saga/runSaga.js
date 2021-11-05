@@ -1,6 +1,6 @@
 import * as effectTypes from './effectTypes';
 
-function runSaga(env, saga) {
+function runSaga(env, saga, callback) {
     let { channel, dispatch } = env;
     //saga可能是一个生成器函数，执行它得到迭代器；也可能就是一个迭代器，就直接使用此迭代器
     let it = typeof saga === 'function' ? saga() : saga;
@@ -48,10 +48,25 @@ function runSaga(env, saga) {
                             }
                         })
                         break;
+                    case effectTypes.ALL:
+                        let { iterators } = effect;
+                        let result = [];
+                        let completedCount = 0;
+                        iterators.forEach((iterator, index) => {
+                            runSaga(env, iterator, (data) => { //给runSaga新增加一个回调参数
+                                result[index] = data;
+                                if (++completedCount === iterators.length) {
+                                    next(result); //子saga执行完，调用父saga的next向下执行
+                                }
+                            })
+                        });
+                        break;
                     default:
                         break;
                 }
             }
+        } else { //如果saga执行完了，就执行saga的回调函数
+            callback && callback(effect);
         }
     }
     next();
