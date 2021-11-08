@@ -37,7 +37,7 @@ function runSaga(env, saga, callback) {
                         next();
                         break;
                     case effectTypes.FORK:
-                        let forkTask = runSaga(env, effect.saga);
+                        let forkTask = runSaga(env, effect.saga.bind(null, ...effect.args));
                         next(forkTask); //当前的saga可以继续向下执行
                         break;
                     case effectTypes.CALL:

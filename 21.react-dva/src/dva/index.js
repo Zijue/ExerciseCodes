@@ -58,28 +58,43 @@ function dva() {
     }
     return app;
 }
-// function prefixType(type, namespace) {
-//     if (type.indexOf('/') === -1) { //如果没有命名空间，就加上自己的命名空间前缀
-//         return namespace + '/' + type;
-//     } else if (type.split('/')[0] === namespace) {
-//         console.warn(`Warning: [sagaEffects.put] ${type} should not be prefixed with namespace ${namespace}`);
+// function createWatcherSaga(key, effect, model) {
+//     return function* () {
+//         yield sagaEffects.takeEvery(key, function* (action) {
+//             yield effect(action, sagaEffects);
+//         });
 //     }
-//     return type;
 // }
-function createWatcherSaga(key, effect, model) {
-    return function* () {
-        yield sagaEffects.takeEvery(key, function* (action) {
-            yield effect(action, sagaEffects);
-        });
+// function getSaga(model) {
+//     const { effects } = model;
+//     return function* () {
+//         for (const key in effects) { //key=asyncAdd
+//             const watcherSaga = createWatcherSaga(key, effects[key], model);
+//             yield sagaEffects.fork(watcherSaga);
+//         }
+//     }
+// }
+function prefixType(type, namespace) {
+    if (type.indexOf('/') === -1) { //如果没有命名空间，就加上自己的命名空间前缀
+        return namespace + '/' + type;
+    } else if (type.split('/')[0] === namespace) {
+        console.warn(`Warning: [sagaEffects.put] ${type} should not be prefixed with namespace ${namespace}`);
     }
+    return type;
 }
 function getSaga(model) {
     const { effects } = model;
     return function* () {
-        debugger
         for (const key in effects) { //key=asyncAdd
-            const watcherSaga = createWatcherSaga(key, effects[key], model);
-            yield sagaEffects.fork(watcherSaga);
+            yield sagaEffects.takeEvery(key, function* (action) {
+                yield effects[key](action, {
+                    ...sagaEffects,
+                    put: action => sagaEffects.put({ //重写sagaEffects中的put方法
+                        ...action,
+                        type: prefixType(action.type, model.namespace) //给type加前缀，保证是`${namespace}/{type}`
+                    })
+                })
+            });
         }
     }
 }

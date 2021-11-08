@@ -6,8 +6,8 @@ export function take(actionType) {
 export function put(action) {
     return { type: effectTypes.PUT, action };
 }
-export function fork(saga) {
-    return { type: effectTypes.FORK, saga };
+export function fork(saga, args) {
+    return { type: effectTypes.FORK, saga, args };
 }
 export function takeEvery(actionType, saga) {
     //将原add的saga包装成一个新的状态机saga，返回的saga会直接执行一次，effect类型是FORK，
@@ -15,8 +15,8 @@ export function takeEvery(actionType, saga) {
     //等待动作派发后，会继续向下执行fork，同时当前的takeEveryHelper saga继续执行到take，继续监听
     function* takeEveryHelper() {
         while (1) { //状态机
-            yield take(actionType);
-            yield fork(saga)
+            const action = yield take(actionType);
+            yield fork(saga, [action]);
         }
     }
     return fork(takeEveryHelper);
