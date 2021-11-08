@@ -4,9 +4,11 @@ import { Provider, connect } from 'react-redux';
 import { applyMiddleware, combineReducers, createStore } from "redux";
 import createSagaMiddleware from 'redux-saga';
 import * as sagaEffects from 'redux-saga/effects';
+import { createHashHistory } from 'history';
+import { routerMiddleware, connectRouter } from 'connected-react-router';
 
 export { connect };
-function dva() {
+function dva(opts) {
     const app = {
         _models: [],
         model,
@@ -14,6 +16,11 @@ function dva() {
         router,
         start,
         createAction,
+        history: createHashHistory()
+    }
+    debugger
+    if (opts.history) {
+        app.history = opts.history;
     }
     function createAction() { //dva并没有此功能
         let actionCreators = {};
@@ -35,7 +42,7 @@ function dva() {
         app._router = routerConfig;
     }
     function start(root) {
-        let reducers = {};
+        let reducers = { router: connectRouter(app.history) };
         //处理_models，生成reducers
         for (const model of app._models) {
             let reducer = getReducer(model);
@@ -47,13 +54,13 @@ function dva() {
         const sagas = getSagas(app);
         let sagaMiddleware = createSagaMiddleware();
         // let store = createStore(combinedReducer);
-        let store = applyMiddleware(sagaMiddleware)(createStore)(combinedReducer);
+        let store = applyMiddleware(sagaMiddleware, routerMiddleware(app.history))(createStore)(combinedReducer);
         window.store = store; //用于开发调试
         //启动全部的saga
         sagas.forEach(saga => sagaMiddleware.run(saga));
         ReactDOM.render(
             <Provider store={store}>
-                {app._router()}
+                {app._router({ history: app.history })}
             </Provider>, document.querySelector(root));
     }
     return app;
