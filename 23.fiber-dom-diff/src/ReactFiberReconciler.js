@@ -1,3 +1,4 @@
+import { scheduleUpdateOnFiber } from './ReactFiberWorkLoop';
 import { createUpdate, enqueueUpdate } from './ReactUpdateQueue';
 
 /**
@@ -13,4 +14,6 @@ export function updateContainer(element, container) {
     update.payload = { element };
     //把更新添加到fiber的更新队列中
     enqueueUpdate(current, update);
+    //不管如何更新，setState，forceUpdate，useState调的都是scheduleUpdateOnFiber
+    scheduleUpdateOnFiber(current);
 }

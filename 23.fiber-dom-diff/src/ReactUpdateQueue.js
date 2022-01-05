@@ -21,5 +21,13 @@ export function createUpdate() {
  */
 export function enqueueUpdate(fiber, update) {
     let updateQueue = fiber.updateQueue;
-    // todo
+    const sharedQueue = updateQueue.shared;
+    const pending = sharedQueue.pending;
+    if (!pending) {
+        update.next = update; //pending指向null，update.next指向自己
+    } else {
+        update.next = pending.next;
+        pending.next = update;
+    }
+    sharedQueue.pending = update; //最后修改pending的指向。永远指向最新的那个
 }
