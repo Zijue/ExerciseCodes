@@ -1,4 +1,4 @@
-import { HostRoot } from './ReactWorkTags';
+import { HostComponent, HostRoot } from './ReactWorkTags';
 import { NoFlags } from './ReactFiberFlags';
 
 export function createHostRootFiber() {
@@ -41,4 +41,14 @@ export function createWorkInProgress(current, pendingProps) {
     //在dom diff的过程中，会给fiber添加副作用
     workInProgress.firstEffect = workInProgress.lastEffect = workInProgress.nextEffect = null;
     return workInProgress;
+}
+export function createFiberFromElement(element) {
+    const { key, type, props } = element;
+    let tag;
+    if (typeof type === 'string') { //div span p 等原生组件
+        tag = HostComponent; //fiber标签设置为原生组件
+    }
+    const fiber = createFiber(tag, props, key);
+    fiber.type = type;
+    return fiber;
 }
