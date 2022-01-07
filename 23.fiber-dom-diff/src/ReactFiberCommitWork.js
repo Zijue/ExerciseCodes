@@ -1,3 +1,4 @@
+import { appendChild } from "./ReactDOMHostConfig";
 import { HostComponent, HostRoot } from "./ReactWorkTags";
 
 function getParentStateNode(fiber) {
@@ -16,5 +17,5 @@ function getParentStateNode(fiber) {
 export function commitPlacement(effect) {
     let stateNode = effect.stateNode;
     let parentStateNode = getParentStateNode(effect);
-    parentStateNode.appendChild(stateNode);
+    appendChild(parentStateNode, stateNode);
 }

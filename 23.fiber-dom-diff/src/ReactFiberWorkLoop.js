@@ -56,6 +56,8 @@ function performUnitOfWork(unitOfWork) {
     const current = unitOfWork.alternate;
     //开始构建当前fiber的子fiber链表；它会返回下一个要处理的fiber，一般都是unitOfWork的大儿子
     let next = beginWork(current, unitOfWork);
+    //在beginWork后，需要把新属性同步到老属性上
+    unitOfWork.memoizedProps = unitOfWork.pendingProps;
     if (next) {
         workInProgress = next;
     } else {
@@ -70,7 +72,6 @@ function performUnitOfWork(unitOfWork) {
  */
 function completeUnitOfWork(unitOfWork) {
     let completedWork = unitOfWork;
-    debugger;
     do {
         const current = completedWork.alternate;
         const returnFiber = completedWork.return;

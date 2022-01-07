@@ -4,6 +4,7 @@ import { REACT_ELEMENT_TYPE } from './ReactSymbols';
 
 function childReconciler(shouldTrackSideEffects) {
     function placeSingleChild(newFiber) {
+        debugger;
         //如果当前需要跟踪副作用，并且当前这个新的fiber它的替身不存在
         if (shouldTrackSideEffects && !newFiber.alternate) {
             //给这个新fiber添加一个副作用，表示在未来提交（commit）阶段的DOM操作中会向真实DOM树中添加此节点
@@ -18,6 +19,14 @@ function childReconciler(shouldTrackSideEffects) {
      * @param {*} element 新的要渲染的虚拟DOM
      */
     function reconcileSingleElement(returnFiber, currentFirstChild, element) {
+        //获取最新的虚拟DOM的key
+        let key = element.key;
+        //获取第一个老的fiber子节点
+        let child = currentFirstChild;
+        // while (child) {
+
+        // }
+
         //初次渲染，根据虚拟节点创建fiber，并将fiber.return指向父fiber
         const created = createFiberFromElement(element);
         created.return = returnFiber;
