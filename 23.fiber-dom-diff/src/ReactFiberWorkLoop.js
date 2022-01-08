@@ -2,7 +2,7 @@ import { createWorkInProgress } from "./ReactFiber";
 import { beginWork } from "./ReactFiberBeginWork";
 import { completeWork } from "./ReactFiberCompleteWork";
 import { Deletion, Placement, PlacementAndUpdate, Update } from "./ReactFiberFlags";
-import { commitPlacement } from "./ReactFiberCommitWork";
+import { commitDeletion, commitPlacement, commitWork } from "./ReactFiberCommitWork";
 
 //当前正在更新的根
 let workInProgressRoot = null;
@@ -138,9 +138,21 @@ function commitMutationEffects(root) {
     while (nextEffect) {
         effectList += `(${getFlags(nextEffect.flags)}#${nextEffect.type}#${nextEffect.key})`
         const flags = nextEffect.flags;
+        const current = nextEffect.alternate;
         switch (flags) {
             case Placement:
                 commitPlacement(nextEffect);
+                break;
+            case PlacementAndUpdate:
+                commitPlacement(nextEffect);
+                nextEffect.flags = Update;
+                commitWork(current, nextEffect);
+                break;
+            case Update:
+                commitWork(current, nextEffect);
+                break;
+            case Deletion:
+                commitDeletion(nextEffect);
                 break;
             default:
                 break;

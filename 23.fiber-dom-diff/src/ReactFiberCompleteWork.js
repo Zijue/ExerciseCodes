@@ -1,5 +1,6 @@
 import { HostComponent } from "./ReactWorkTags";
-import { createInstance, appendChild, finalizeInitialChildren } from "./ReactDOMHostConfig";
+import { createInstance, appendChild, finalizeInitialChildren, prepareUpdate } from "./ReactDOMHostConfig";
+import { Update } from "./ReactFiberFlags";
 
 export function completeWork(current, workInProgress) {
     const newProps = workInProgress.pendingProps;
@@ -40,5 +41,20 @@ function appendAllChildren(parent, workInProgress) {
  * @param {*} newProps 新虚拟DOM上的新属性
  */
 function updateHostComponent(current, workInProgress, tag, newProps) {
-
+    //老fiber上的老属性
+    let oldProps = current.memoizedProps;
+    //可复用真实的DOM节点
+    const instance = workInProgress.stateNode;
+    const updatePayload = prepareUpdate(instance, tag, oldProps, newProps);
+    workInProgress.updateQueue = updatePayload;
+    if (updatePayload) {
+        //如果flags原来是0，变成100
+        workInProgress.flags |= Update;
+        //为什么会有上面这一步，举个例子：
+        //当flags=6时，就是既要插入新位置，又要更新，针对的就是DOM-DIFF中节点移动的情况
+    }
 }
+/**
+ * 根fiber rootFiber updateQueue 是一个环状链表 update {payload: element}
+ * 原生组件 HostComponent updateQueue 是一个数组 updatePayload [key1, value1, key2, value2]
+ */

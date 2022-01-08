@@ -1,4 +1,5 @@
-import { appendChild } from "./ReactDOMHostConfig";
+import { updateProperties } from "./ReactDOMComponent";
+import { appendChild, removeChild } from "./ReactDOMHostConfig";
 import { HostComponent, HostRoot } from "./ReactWorkTags";
 
 function getParentStateNode(fiber) {
@@ -18,4 +19,21 @@ export function commitPlacement(effect) {
     let stateNode = effect.stateNode;
     let parentStateNode = getParentStateNode(effect);
     appendChild(parentStateNode, stateNode);
+}
+export function commitDeletion(fiber) {
+    if (!fiber) return;
+    let parentStateNode = getParentStateNode(fiber);
+    removeChild(parentStateNode, fiber.stateNode);
+}
+/**
+ * 提交DOM更新操作
+ * @param {*} current 
+ * @param {*} finishedWork 
+ */
+export function commitWork(current, finishedWork) {
+    const updatePayload = finishedWork.updateQueue;
+    finishedWork.updateQueue = null;
+    if (updatePayload) {
+        updateProperties(finishedWork.stateNode, updatePayload);
+    }
 }

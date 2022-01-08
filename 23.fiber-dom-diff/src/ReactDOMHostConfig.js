@@ -1,4 +1,4 @@
-import { createElement, setInitialProperties } from "./ReactDOMComponent";
+import { createElement, setInitialProperties, diffProperties } from "./ReactDOMComponent";
 import { REACT_TEXT } from "./ReactSymbols";
 
 /**
@@ -18,4 +18,10 @@ export function appendChild(parentInstance, child) {
 }
 export function finalizeInitialChildren(domElement, type, props) {
     setInitialProperties(domElement, type, props);
+}
+export function prepareUpdate(domElement, type, oldProps, newProps) {
+    return diffProperties(domElement, type, oldProps, newProps);
+}
+export function removeChild(parentInstance, child) {
+    parentInstance.removeChild(child);
 }
