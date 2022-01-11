@@ -33,6 +33,7 @@ function childReconciler(shouldTrackSideEffects) {
     }
     function useFiber(oldFiber, pendingProps) {
         let clone = createWorkInProgress(oldFiber, pendingProps);
+        clone.index = 0; //此fiber挂载的索引清空
         clone.sibling = null; //清空弟弟
         return clone;
     }
@@ -43,6 +44,11 @@ function childReconciler(shouldTrackSideEffects) {
             newFiber.flags = Placement;
         }
         return newFiber;
+    }
+    function createChild(returnFiber, newChild) {
+        const created = createFiberFromElement(newChild);
+        created.return = returnFiber;
+        return created;
     }
     /**
      * 协调单节点
@@ -88,8 +94,31 @@ function childReconciler(shouldTrackSideEffects) {
      * @param {*} currentFirstChild 
      * @param {*} newChild 
      */
-    function reconcileChildrenArray(returnFiber, currentFirstChild, newChild) {
-
+    function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren) {
+        //将要返回的第一个新fiber
+        let resultingFirstChild = null;
+        //上一个新fiber
+        let previousNewFiber = null;
+        //当前的老fiber
+        let oldFiber = currentFirstChild;
+        //下一个老fiber
+        let nextOldFiber = null;
+        //新的虚拟DOM的索引
+        let newIdx = 0;
+        //如果没有老fiber，初次挂载
+        if (!oldFiber) {
+            //循环虚拟DOM数组，为每个虚拟DOM创建一个新的fiber
+            for (; newIdx < newChildren.length; newIdx++) {
+                const newFiber = createChild(returnFiber, newChildren[newIdx]);
+                if (!previousNewFiber) {
+                    resultingFirstChild = newFiber;
+                } else {
+                    previousNewFiber.sibling = newFiber;
+                }
+                previousNewFiber = newFiber;
+            }
+            return resultingFirstChild;
+        }
     }
     /**
      * @param {*} returnFiber 新的父fibber

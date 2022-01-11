@@ -14,6 +14,8 @@ export function completeWork(current, workInProgress) {
                 const type = workInProgress.type;
                 //创建此fiber的真实DOM节点
                 const instance = createInstance(type);
+                //初次挂载的节点，并不会收集子节点的副作用，需要手动挂载所有子节点
+                appendAllChildren(instance, workInProgress);
                 //让此fiber的真实DOM属性指向instance
                 workInProgress.stateNode = instance;
                 //给真实DOM添加属性，包括如果独生子节点是文本的情况，也在这里处理
