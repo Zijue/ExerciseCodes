@@ -1,6 +1,7 @@
 import { updateProperties } from "./ReactDOMComponent";
-import { appendChild, removeChild } from "./ReactDOMHostConfig";
+import { appendChild, insertBefore, removeChild } from "./ReactDOMHostConfig";
 import { HostComponent, HostRoot } from "./ReactWorkTags";
+import { Placement } from "./ReactFiberFlags";
 
 function getParentStateNode(fiber) {
     let parent = fiber.return;
@@ -15,10 +16,30 @@ function getParentStateNode(fiber) {
         }
     } while (parent);
 }
+function getHostSibling(fiber) {
+    let node = fiber.sibling;
+    while (node) {
+        //找它的弟弟们，找到最近一个，不是插入的节点，返回
+        if (!(node.flags & Placement)) {
+            return node.stateNode;
+        }
+        node = node.sibling;
+    }
+    return null;
+}
+/**
+ * 插入节点
+ * @param {*} effect 需要插入的fiber
+ */
 export function commitPlacement(effect) {
     let stateNode = effect.stateNode;
     let parentStateNode = getParentStateNode(effect);
-    appendChild(parentStateNode, stateNode);
+    let before = getHostSibling(effect);
+    if (before) {
+        insertBefore(parentStateNode, stateNode, before);
+    } else {
+        appendChild(parentStateNode, stateNode);
+    }
 }
 export function commitDeletion(fiber) {
     if (!fiber) return;

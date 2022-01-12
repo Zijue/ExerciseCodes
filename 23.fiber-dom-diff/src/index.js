@@ -66,3 +66,98 @@ single4Update.addEventListener('click', () => {
     );
     ReactDOM.render(element, root);
 });
+
+//多节点diff
+//5.多个节点的数量、类型及key全部相同，只更新属性
+multi1.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <li key="B" id="B">B</li>
+            <li key="C" id="C">C</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});
+multi1Update.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <p key="B" id="B2">B2</p>
+            <li key="C" id="C2">C2</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});
+
+//6.多个节点的类型和key全部相同，有新增元素；增加新元素并更新老元素
+multi2.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <li key="B" id="B">B</li>
+            <li key="C">C</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});
+multi2Update.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <li key="B" id="B2">B2</li>
+            <li key="C">C</li>
+            <li key="D">D</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});
+
+//7.多个节点的类型和key全部相同，有删除老元素
+multi3.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <li key="B" id="B">B</li>
+            <li key="C">C</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});
+multi3Update.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <li key="B" id="B2">B2</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});
+
+//8.多个节点数量不同、key不同
+multi5.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <li key="B" id="b">B</li>
+            <li key="C">C</li>
+            <li key="D">D</li>
+            <li key="E">E</li>
+            <li key="F">F</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});
+multi5Update.addEventListener('click', () => {
+    let element = (
+        <ul key="ul">
+            <li key="A">A</li>
+            <li key="C">C</li>
+            <li key="E">E</li>
+            <li key="B" id="b2">B2</li>
+            <li key="G">G</li>
+            <li key="D">D</li>
+        </ul>
+    );
+    ReactDOM.render(element, root);
+});

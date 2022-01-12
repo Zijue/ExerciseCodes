@@ -25,3 +25,6 @@ export function prepareUpdate(domElement, type, oldProps, newProps) {
 export function removeChild(parentInstance, child) {
     parentInstance.removeChild(child);
 }
+export function insertBefore(parentInstance, child, before) {
+    parentInstance.insertBefore(child, before);
+}
