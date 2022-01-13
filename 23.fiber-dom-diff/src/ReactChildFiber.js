@@ -222,7 +222,6 @@ function childReconciler(shouldTrackSideEffects) {
                 if (newFiber.alternate) { //说明复用的老fiber
                     existingChildren.delete(newFiber.key || newIdx);
                 }
-                //todo，还有问题
                 lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
                 if (!previousNewFiber) {
                     resultingFirstChild = newFiber;
@@ -232,6 +231,9 @@ function childReconciler(shouldTrackSideEffects) {
                 previousNewFiber = newFiber;
             }
         }
+        //map中剩下是没有被复用的，全部删除
+        existingChildren.forEach(child => deleteChild(returnFiber, child));
+        return resultingFirstChild;
     }
     /**
      * @param {*} returnFiber 新的父fibber
